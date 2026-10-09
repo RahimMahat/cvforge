@@ -31,7 +31,6 @@ class Config(BaseModel):
     formats: list[Literal["pdf", "docx", "txt", "md"]] = ["pdf", "docx", "txt", "md"]
     date_format: str = "%b %Y"  # Jun 2023
     section_order: list[str] = DEFAULT_SECTION_ORDER
-    keep_heading_text: bool = False
     company_suffix: bool = False
     max_file_mb: float = 2.0
 

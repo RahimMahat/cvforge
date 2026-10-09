@@ -1,0 +1,19 @@
+# classic: clean, "Jake's Resume"-like. Black text, uppercase headings with a thin rule.
+# Sizes are pt, margin is mm, tracking is em, line_height is a multiple of the font size.
+
+font = "Source Serif 4"
+accent = "#000000"        # name and section headings
+muted = "#4d4d4d"         # dates and locations (contrast 8.5:1 on white)
+
+name_size = 24
+headline_size = 11.5
+heading_size = 11
+heading_tracking = 0.08
+heading_rule = true
+body_size = 10.5
+line_height = 1.25
+
+section_gap = 11
+entry_gap = 7
+item_gap = 3              # between bullets and between skill lines
+margin = 16

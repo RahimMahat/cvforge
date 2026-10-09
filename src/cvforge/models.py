@@ -45,6 +45,7 @@ class Meta(_Model):
 class Link(_Model):
     label: str
     url: str
+    text: str | None = None  # visible text, if the source showed something shorter than the url
 
 
 class Basics(_Model):

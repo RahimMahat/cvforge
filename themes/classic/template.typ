@@ -1,0 +1,73 @@
+// classic theme. All content arrives as data; nothing here is built from user text.
+#let data = json(bytes(sys.inputs.data))
+#let t = data.theme
+#let accent = rgb(t.accent)
+#let muted = rgb(t.muted)
+#let lead = (t.line_height - 1) * 1em
+#let item-gap = t.item_gap * 1pt
+
+#set document(title: data.name + " Resume", author: data.name, date: none)
+#set page(paper: data.paper, margin: t.margin * 1mm)
+// Edges give every line a 1em box, so line height is exactly 1em + leading.
+#set text(
+  font: t.font, size: t.body_size * 1pt, lang: "en",
+  hyphenate: false, ligatures: false, top-edge: 0.8em, bottom-edge: -0.2em,
+)
+#set par(justify: false, leading: lead, spacing: lead)
+#set block(spacing: lead)
+#set list(marker: [•], indent: 0pt, body-indent: 0.6em, spacing: item-gap)
+// Never break a line at an existing hyphen: "on-" / "call" reads as a broken word to a parser.
+#show regex("\w+(-\w+)+"): box
+
+#show heading: it => block(above: t.section_gap * 1pt, below: 5pt, sticky: true, {
+  set text(size: t.heading_size * 1pt, weight: "bold", fill: accent, tracking: t.heading_tracking * 1em)
+  upper(it.body)
+  if t.heading_rule {
+    v(3pt, weak: true)
+    line(length: 100%, stroke: 0.5pt + accent)
+  }
+})
+
+#let seg(s) = {
+  let body = if s.at("bold", default: false) { strong(s.text) } else { s.text }
+  if s.at("url", default: none) != none { link(s.url, body) } else { body }
+}
+#let rich(segs) = segs.map(seg).join()
+
+// One line: text on the left, dates or location pushed right with h(1fr).
+#let row(l, above) = block(above: above, sticky: true, {
+  let left = rich(l.left)
+  if l.style == "primary" { strong(left) } else if l.style == "secondary" { emph(left) } else { left }
+  if l.right != "" {
+    h(1fr)
+    text(fill: muted, number-width: "tabular", l.right)
+  }
+})
+
+#let entry(b, above) = {
+  for (i, l) in b.lines.enumerate() { row(l, if i == 0 { above } else { lead }) }
+  for p in b.paragraphs { block(above: item-gap, rich(p)) }
+  if b.bullets.len() > 0 { block(above: item-gap, list(..b.bullets.map(rich))) }
+}
+
+// Header: name, headline and contact line, all in the page body.
+#block(text(size: t.name_size * 1pt, weight: "bold", fill: accent, data.name))
+#if data.headline != none { block(above: 6pt, text(size: t.headline_size * 1pt, data.headline)) }
+#block(above: 6pt, data.contact.map(c => {
+  if c.url != none { link(c.url, c.text) } else { c.text }
+}).join(text(fill: muted, " | ")))
+
+#for s in data.sections {
+  heading(s.heading)
+  for (i, b) in s.blocks.enumerate() {
+    let first = i == 0
+    if b.kind == "entry" {
+      entry(b, if first { 0pt } else if b.continued { item-gap + 1pt } else { t.entry_gap * 1pt })
+    } else {
+      let above = if first { 0pt } else { item-gap }
+      if b.kind == "paragraph" { block(above: above, rich(b.segments)) }
+      if b.kind == "labeled" { block(above: above, [#strong(b.label + ":") #rich(b.segments)]) }
+      if b.kind == "bullets" { block(above: above, list(..b.items.map(rich))) }
+    }
+  }
+}

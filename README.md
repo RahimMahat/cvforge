@@ -12,6 +12,7 @@ Spec: [cvforge-build-prompt.md](cvforge-build-prompt.md).
 uv sync
 uv run cvforge init      # creates cvforge.toml and an example resume.yaml
 uv run cvforge schema    # prints the JSON Schema of resume.yaml
+uv run cvforge render examples/resume.yaml   # writes out/resume/Jane_Doe_Resume.pdf
 ```
 
 ## Development
@@ -22,3 +23,5 @@ uv run ruff check . && uv run ruff format --check .
 ```
 
 `samples/` and `out/` hold personal data and are gitignored.
+
+Bundled fonts in `fonts/` are under the SIL Open Font License; each family's folder holds its license.

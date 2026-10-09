@@ -6,7 +6,6 @@ paper = "a4"                 # "a4" | "us-letter"
 formats = ["pdf", "docx", "txt", "md"]
 
 date_format = "%b %Y"        # how YYYY-MM dates are displayed: Jun 2023
-keep_heading_text = false    # true: keep the source's heading wording instead of standard words
 company_suffix = false       # true: Jane_Doe_Resume_Acme.pdf
 max_file_mb = 2.0
 
