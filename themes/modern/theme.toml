@@ -1,5 +1,4 @@
-# modern: sans-serif with one accent colour. The name sits on a full-width colour band,
-# headings and bullets pick up the accent, and there is more whitespace. Still one column.
+# modern: sans-serif, name on a full-width colour band, accent headings and bullets; one column.
 # Sizes are pt, margin is mm, tracking is em, line_height is a multiple of the font size.
 
 font = "Inter"
