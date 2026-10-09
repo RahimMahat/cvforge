@@ -1,13 +1,15 @@
 """cvforge command line. Exit codes: 0 ok, 1 checks failed, 2 usage or input error."""
 
+import functools
 import json
-import re
 import shutil
 import sys
+import unicodedata
+from collections.abc import Callable
 from dataclasses import asdict
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from pydantic import ValidationError
@@ -76,6 +78,29 @@ def _fail(message: str, exc: Exception | None = None, code: int = 2) -> typer.Ex
     return typer.Exit(code)
 
 
+def _writes_files[F: Callable[..., Any]](command: F) -> F:
+    """Turn a file error, typically an output that is read-only or open in Word, into a
+    clear usage error instead of a traceback."""
+
+    @functools.wraps(command)
+    def guarded(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return command(*args, **kwargs)
+        except OSError as exc:
+            hint = "File error (is an output file read-only or open in another program?):"
+            raise _fail(hint, exc) from exc
+
+    return guarded  # type: ignore[return-value]
+
+
+def _config() -> Config:
+    """cvforge.toml from the working folder; a mistake in it is a usage error, not a crash."""
+    try:
+        return load_config()
+    except (OSError, ValueError) as exc:  # bad TOML and failed validation are both ValueErrors
+        raise _fail(f"Cannot read {CONFIG_NAME}:", exc) from exc
+
+
 def _load_resume(path: Path) -> Resume:
     try:
         return load_resume(path)
@@ -88,7 +113,12 @@ def output_stem(resume: Resume, config: Config) -> str:
     parts = [*resume.basics.name.split(), "Resume"]
     if config.company_suffix and resume.meta.target_company:
         parts += resume.meta.target_company.split()
-    return "_".join(filter(None, (re.sub(r"\W", "", part) for part in parts)))
+    # Letters, digits and combining marks only; marks matter for scripts such as Devanagari.
+    words = (
+        "".join(ch for ch in part if ch.isalnum() or unicodedata.category(ch)[0] == "M")
+        for part in parts
+    )
+    return "_".join(filter(None, words))
 
 
 def _out_dir(resume: Resume, yaml_path: Path) -> Path:
@@ -96,9 +126,13 @@ def _out_dir(resume: Resume, yaml_path: Path) -> Path:
     return Path("out") / source.stem
 
 
+@_writes_files
 def _check(pdf: Path, config: Config, resume: Resume | None, jd: str | None = None) -> None:
     """Run the ATS check, save ats_view.txt and report.json beside the PDF, exit 1 on failure."""
-    results, texts = run_checks(pdf, config, resume, jd)
+    try:
+        results, texts = run_checks(pdf, config, resume, jd)
+    except ValueError as exc:
+        raise _fail("Cannot check:", exc) from exc
     (pdf.parent / "ats_view.txt").write_text(texts[PRIMARY], encoding="utf-8")
     update_report(pdf.parent / "report.json", check=check_section(pdf, results, list(texts)))
     print_checks(results, console)
@@ -106,6 +140,7 @@ def _check(pdf: Path, config: Config, resume: Resume | None, jd: str | None = No
         raise typer.Exit(1)
 
 
+@_writes_files
 def _ingest(
     source: Path, config: Config, yaml_path: Path, extractor: Extractor = Extractor.rules
 ) -> bool:
@@ -168,6 +203,7 @@ def _print_fit(report: FitReport) -> None:
         err.print(f"[yellow]fit: {warning}[/yellow]", highlight=False)
 
 
+@_writes_files
 def _render(
     yaml_path: Path,
     theme: str | None,
@@ -176,7 +212,7 @@ def _render(
     pages: int | None = None,
     formats: str | None = None,
 ) -> None:
-    config = load_config()
+    config = _config()
     if pages:
         config = config.model_copy(update={"pages": pages})
     wanted = [f.strip().lower() for f in formats.split(",")] if formats else config.formats
@@ -228,7 +264,7 @@ def _run(source: Path, theme: str | None, pages: int | None) -> None:
     """Ingest, verify, lint, render and check one source resume."""
     _warn_if_pdf(source)
     yaml_path = Path("out") / source.stem / "resume.yaml"
-    if not _ingest(source, load_config(), yaml_path):
+    if not _ingest(source, _config(), yaml_path):
         raise _fail("Verification failed; nothing was rendered.", code=1)
     warnings = lint_resume(load_resume(yaml_path))
     update_report(
@@ -246,6 +282,9 @@ def _run_quietly(source: Path, theme: str | None, pages: int | None) -> int:
         _run(source, theme, pages)
     except typer.Exit as stop:
         return stop.exit_code
+    except Exception as exc:  # one unexpected failure must not end a batch or a watch
+        err.print(f"[red]Unexpected error:[/red] {escape(repr(exc))}", highlight=False)
+        return 2
     return 0
 
 
@@ -266,17 +305,18 @@ def ingest(
     """Map a source resume to resume.yaml, then verify it against the source."""
     _warn_if_pdf(source)
     yaml_path = output or Path("out") / source.stem / "resume.yaml"
-    if not _ingest(source, load_config(), yaml_path, extractor):
+    if not _ingest(source, _config(), yaml_path, extractor):
         raise typer.Exit(1)
 
 
 @app.command(name="verify")
+@_writes_files
 def verify_command(
     source: SourceArg,
     yaml_path: Annotated[Path, typer.Argument(help="The resume.yaml mapped from it.")],
 ) -> None:
     """Check that a resume.yaml says exactly what its source says."""
-    config = load_config()
+    config = _config()
     resume = _load_resume(yaml_path)
     try:
         doc, _ = split_dropped(load_source(source, config), config)
@@ -331,7 +371,7 @@ def check(
             raise FileNotFoundError(pdf)
     except OSError as exc:
         raise _fail("Cannot read:", exc) from exc
-    _check(pdf, load_config(), resume, jd_text)
+    _check(pdf, _config(), resume, jd_text)
 
 
 @app.command()
@@ -347,6 +387,7 @@ def batch(
     pages: PagesOpt = None,
 ) -> None:
     """Run every .html and .tex file in a folder. One failure does not stop the rest."""
+    _config()  # a broken config should stop the batch before the first file, not on each
     sources = find_sources(directory) if directory.is_dir() else []
     if not sources:
         raise _fail(f"No .html or .tex files found in {directory}")
@@ -368,7 +409,8 @@ def watch(
     pages: PagesOpt = None,
 ) -> None:
     """Process .html and .tex files as they appear or change. Stop with Ctrl+C."""
-    folders = directories or [Path(folder) for folder in load_config().watch_dirs]
+    config = _config()  # read even when folders are given, so a broken config fails at once
+    folders = directories or [Path(folder) for folder in config.watch_dirs]
     if missing := [str(folder) for folder in folders if not folder.is_dir()]:
         raise _fail(f"Not a folder: {', '.join(missing)}")
     if not folders:
@@ -394,7 +436,7 @@ def tui(
     sources = find_sources(directory) if directory.is_dir() else []
     if not sources:
         raise _fail(f"No .html or .tex files found in {directory}")
-    config = load_config()
+    config = _config()
     CvforgeApp(sources, list(list_themes()), config.theme, config.pages).run()
 
 
@@ -403,6 +445,7 @@ class ExportFormat(StrEnum):
 
 
 @app.command()
+@_writes_files
 def export(
     yaml_path: Annotated[Path, typer.Argument(help="The resume.yaml to export.")],
     format: Annotated[ExportFormat, typer.Option(help="Target schema.")] = ExportFormat.jsonresume,
@@ -420,6 +463,7 @@ def export(
 
 
 @app.command()
+@_writes_files
 def themes(
     preview: Annotated[
         bool, typer.Option("--preview", help="Render the example resume in every theme.")
@@ -429,7 +473,7 @@ def themes(
     ),
 ) -> None:
     """List the themes; with --preview, render each one to PNG for comparison."""
-    config = load_config()
+    config = _config()
     view = build_view(load_resume(resource("examples/resume.yaml")), config)
     for name, description in list_themes().items():
         default = " (default)" if name == config.theme else ""
@@ -440,6 +484,7 @@ def themes(
 
 
 @app.command()
+@_writes_files
 def init(
     directory: Annotated[Path, typer.Argument(help="Where to create the files.")] = Path("."),
     force: Annotated[bool, typer.Option("--force", help="Overwrite existing files.")] = False,

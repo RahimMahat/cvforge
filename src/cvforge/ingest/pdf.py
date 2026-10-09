@@ -3,14 +3,11 @@ the plain-text parser run on the extracted text; prefer the HTML or LaTeX source
 
 from pathlib import Path
 
-import pdfplumber
-
+from cvforge.check.extract_text import pdf_text
 from cvforge.config import Config
 from cvforge.ingest.sourcedoc import SourceDoc
 from cvforge.ingest.text import parse_text
 
 
 def parse_pdf(path: Path, config: Config) -> SourceDoc:
-    with pdfplumber.open(path) as pdf:
-        text = "\n".join(page.extract_text() or "" for page in pdf.pages)
-    return parse_text(text, config)
+    return parse_text(pdf_text(path), config)

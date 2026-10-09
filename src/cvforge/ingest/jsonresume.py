@@ -38,6 +38,15 @@ def _plain(value: Any) -> str:
 
 def parse_jsonresume(source: str, config: Config) -> SourceDoc:
     data = json.loads(source)
+    if not isinstance(data, dict):
+        raise ValueError("not a JSON Resume: the file must hold one JSON object")
+    try:
+        return _to_doc(data)
+    except (AttributeError, TypeError, KeyError) as exc:  # e.g. "skills" holding plain strings
+        raise ValueError(f"not a JSON Resume: unexpected structure ({exc})") from exc
+
+
+def _to_doc(data: dict[str, Any]) -> SourceDoc:
     doc = SourceDoc()
 
     def add(kind: str, text: Any, **fields: Any) -> None:
@@ -46,7 +55,8 @@ def parse_jsonresume(source: str, config: Config) -> SourceDoc:
             if fields.get("url"):
                 doc.links.append({"text": text, "url": fields["url"]})
 
-    basics = data.get("basics", {})
+    basics = data.get("basics")
+    basics = basics if isinstance(basics, dict) else {}
     add("line", basics.get("name"), role="name")
     add("line", basics.get("label"), role="headline")
     add("line", basics.get("email"), role="email")
@@ -73,8 +83,11 @@ def parse_jsonresume(source: str, config: Config) -> SourceDoc:
         if not data.get(key):
             continue
         add("heading", heading, level=2)
-        for item in data[key]:
+        for item in data[key] if isinstance(data[key], list) else [data[key]]:
             first = len(doc.blocks)
+            if not isinstance(item, dict):  # not the documented shape: keep its text anyway
+                add("bullet", _plain(item))
+                continue
             for role, field in roles.items():
                 add(
                     "line",

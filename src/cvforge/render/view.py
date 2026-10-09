@@ -14,7 +14,7 @@ from datetime import date
 from itertools import groupby
 from typing import Any
 
-from cvforge.config import Config
+from cvforge.config import DEFAULT_SECTION_ORDER, Config
 from cvforge.models import Education, Experience, Project, Resume
 from cvforge.render.segments import Segment, to_segments
 
@@ -170,9 +170,12 @@ def _contact(resume: Resume) -> list[dict[str, str | None]]:
 def build_view(resume: Resume, config: Config) -> dict[str, Any]:
     sections = []
     extras = [extra for extra in resume.extra_sections if extra.items]
-    for key in config.section_order:
-        if key == "extra_sections":  # those not pinned after a section that is being rendered
-            placed = [e for e in extras if e.after not in config.section_order]
+    # Sections the config does not list follow in the default order: nothing is ever hidden.
+    order = [*config.section_order]
+    order += [key for key in DEFAULT_SECTION_ORDER if key not in order]
+    for key in order:
+        if key == "extra_sections":  # those not pinned after a standard section
+            placed = [e for e in extras if e.after not in order]
         else:
             if blocks := _blocks(resume, key, config.date_format):
                 kept = resume.meta.headings.get(key) if config.keep_heading_text else None

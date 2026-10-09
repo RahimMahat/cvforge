@@ -57,7 +57,7 @@ Exit codes: `0` ok, `1` a check failed, `2` usage or input error.
 | `cvforge lint <yaml>` | Style warnings. Never changes anything, always exits 0. |
 | `cvforge render <yaml> [--theme] [--pages N] [--formats pdf,docx,txt,md] [--out dir] [--force]` | YAML to output files, then the ATS check on the PDF. |
 | `cvforge check <pdf> [--yaml resume.yaml] [--jd jd.txt]` | The ATS check on its own, with optional JD keyword coverage. |
-| `cvforge themes [--preview]` | List themes; `--preview` writes `out/themes/<theme>-1.png`. |
+| `cvforge themes [--preview] [--out dir]` | List themes; `--preview` writes `out/themes/<theme>-1.png`. |
 | `cvforge export <yaml> --format jsonresume [-o file]` | Export to JSON Resume. |
 | `cvforge schema` | Print the JSON Schema of `resume.yaml`. |
 | `cvforge init [dir]` | Create `cvforge.toml` and an example `resume.yaml`. |
@@ -180,7 +180,7 @@ folder you run in; with no file, the defaults apply.
 | `paper` | `"a4"` | Or `"us-letter"`. |
 | `formats` | all four | Which of `pdf`, `docx`, `txt`, `md` to write. |
 | `date_format` | `"%b %Y"` | How `YYYY-MM` dates are shown. |
-| `section_order` | Summary, Skills, Experience, Projects, Education, ... | Order of sections. |
+| `section_order` | Summary, Skills, Experience, Projects, Education, ... | Order of sections. Any you leave out still render, after the ones you list. |
 | `keep_heading_text` | `false` | Render the source's heading wording. |
 | `company_suffix` | `false` | `Jane_Doe_Resume_Acme.pdf` from `meta.target_company`. |
 | `max_file_mb` | `2.0` | PDF size limit in the ATS check. |
@@ -204,6 +204,11 @@ config change, for example `resumeSubheading = ["org", "location", "title", "dat
 - The DOCX is tested for structure, links and content order, but only the PDF goes through the
   ATS check.
 - Lint's tense and keyword rules are heuristics and will occasionally misfire.
+- The bundled fonts cover Latin scripts (including accents and symbols such as ₹ and €).
+  Text in other scripts, such as Devanagari, Arabic or CJK, fails the ATS check by name
+  rather than rendering wrongly in silence.
+- A mistake in `cvforge.toml`, an unreadable source, or an output file that is read-only or
+  open in another program stops the command with exit code 2 and a one-line reason.
 
 ## Development
 

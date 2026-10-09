@@ -226,10 +226,12 @@ def write_sidecar(yaml_path: Path, source: Path, results: list[CheckResult]) -> 
 
 def verification_state(yaml_path: Path) -> str:
     """'passed', 'edited' (passed, then the YAML changed), 'failed' or 'unverified'."""
-    sidecar = _sidecar(yaml_path)
-    if not sidecar.exists():
+    try:
+        record = json.loads(_sidecar(yaml_path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):  # never verified, or the record is unreadable
         return "unverified"
-    record = json.loads(sidecar.read_text(encoding="utf-8"))
+    if not isinstance(record, dict):
+        return "unverified"
     if not record.get("passed"):
         return "failed"
     return "passed" if record.get("sha256") == _digest(yaml_path) else "edited"

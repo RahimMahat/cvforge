@@ -4,7 +4,7 @@ import tomllib
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 CONFIG_NAME = "cvforge.toml"
 
@@ -117,6 +117,14 @@ class Config(BaseModel):
     heading_synonyms: dict[str, list[str]] = HEADING_SYNONYMS
     html_classes: dict[str, str] = HTML_CLASSES
     latex_macros: dict[str, list[str]] = LATEX_MACROS
+
+    @field_validator("section_order")
+    @classmethod
+    def _known_sections(cls, order: list[str]) -> list[str]:
+        if unknown := [name for name in order if name not in DEFAULT_SECTION_ORDER]:
+            known = ", ".join(DEFAULT_SECTION_ORDER)
+            raise ValueError(f"unknown section(s) {unknown}; choose from {known}")
+        return order
 
     def section_for(self, heading: str) -> str | None:
         """The schema section a source heading maps to, if any."""

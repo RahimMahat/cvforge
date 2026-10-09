@@ -54,6 +54,11 @@ def check_section(
 
 def update_report(path: Path, **sections: Any) -> None:
     """Merge sections into report.json, keeping what earlier stages wrote."""
-    report = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):  # no report yet, or one damaged by hand: start afresh
+        report = {}
+    if not isinstance(report, dict):
+        report = {}
     report.update(sections)
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
