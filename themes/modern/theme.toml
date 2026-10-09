@@ -1,0 +1,23 @@
+# modern: sans-serif with one accent colour. The name sits on a full-width colour band,
+# headings and bullets pick up the accent, and there is more whitespace. Still one column.
+# Sizes are pt, margin is mm, tracking is em, line_height is a multiple of the font size.
+
+font = "Inter"
+accent = "#1F3A5F"        # header band, section headings, bullets (white on it: 11.6:1)
+muted = "#5b6470"         # dates and locations (contrast 6.0:1 on white)
+rule = "#c5ced9"          # line under section headings
+header = "band"           # "plain" | "band" (name on a full-width band of the accent colour)
+accent_bullets = true
+
+name_size = 26
+headline_size = 12
+heading_size = 10.5
+heading_tracking = 0.1
+heading_rule = true
+body_size = 10
+line_height = 1.3
+
+section_gap = 12
+entry_gap = 8
+item_gap = 3.5            # between bullets and between skill lines
+margin = 18

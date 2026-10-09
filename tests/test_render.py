@@ -72,7 +72,9 @@ def test_render_command_writes_pdf(tmp_path):
         assert word in text
     assert not set(text) & set("ﬁﬂﬀﬃﬄ�")
     lines = [ln.strip() for page in reader.pages for ln in page.extract_text().splitlines()]
-    assert not [ln for ln in lines if ln.endswith("-")]  # "on-call" is not split at its hyphen
+    assert not [
+        ln for ln in lines if ln.endswith(("-", "/"))
+    ]  # "on-call" is not split at its hyphen
     # only the bundled font is used: no glyph fell back to another family
     fonts = {f["/BaseFont"] for page in reader.pages for f in _fonts(page)}
     assert fonts and all("SourceSerif4" in name for name in fonts)
@@ -133,8 +135,9 @@ def test_output_stem():
     assert output_stem(resume, Config(company_suffix=True)) == "Jane_ODoe_Resume_Acme_Inc"
 
 
-def test_classic_theme_tokens_within_spec_ranges():
-    t = load_theme("classic")
+@pytest.mark.parametrize("theme", ["classic", "modern", "compact"])
+def test_theme_tokens_within_spec_ranges(theme):
+    t = load_theme(theme)
     assert 22 <= t["name_size"] <= 26
     assert 11 <= t["headline_size"] <= 12
     assert 10.5 <= t["heading_size"] <= 11.5
@@ -145,6 +148,7 @@ def test_classic_theme_tokens_within_spec_ranges():
     assert 6 <= t["entry_gap"] <= 8
     assert 14 <= t["margin"] <= 18
     assert _contrast_on_white(t["muted"]) >= 4.5
+    assert _contrast_on_white(t["accent"]) >= 4.5  # also the contrast of white text on a band
 
 
 def _contrast_on_white(hex_color: str) -> float:

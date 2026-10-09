@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import sys
+from dataclasses import asdict
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
@@ -24,7 +25,8 @@ from cvforge.ingest import load_source
 from cvforge.ingest.sourcedoc import split_dropped
 from cvforge.lint import lint as lint_resume
 from cvforge.models import Meta, Resume
-from cvforge.render.typst_renderer import render_pdf
+from cvforge.render.fit import FitReport, fit
+from cvforge.render.typst_renderer import list_themes, render_png
 from cvforge.render.view import build_view
 from cvforge.verify import passed, verification_state, verify, write_sidecar
 from cvforge.yaml_io import dump_resume, load_resume
@@ -36,6 +38,9 @@ console = Console()
 _TOOLS = ("career-ops", "ai-job-search")
 SourceArg = Annotated[Path, typer.Argument(help="Source resume (.html or .tex).")]
 ThemeOpt = Annotated[str | None, typer.Option(help="Theme name; default from config.")]
+PagesOpt = Annotated[
+    int | None, typer.Option(min=1, help="Maximum pages; the layout is tightened to fit.")
+]
 
 
 class Extractor(StrEnum):
@@ -132,8 +137,34 @@ def _ingest(
     return passed(results)
 
 
-def _render(yaml_path: Path, theme: str | None, out: Path | None, force: bool) -> None:
+def _print_fit(report: FitReport) -> None:
+    """Say what fitting did; on failure, how far over the resume is and what is longest."""
+    for token, change in report.adjustments.items():
+        console.print(f"fit: {token} {change}", highlight=False)
+    if not report.fits:
+        err.print(
+            f"[red]Does not fit {report.limit} page(s):[/red] about {report.lines_over} line(s) "
+            "over even at the tightest layout. Nothing was dropped; shorten the content, "
+            "raise --pages, or try --theme compact.",
+            highlight=False,
+        )
+        for title, items in (
+            ("Longest sections", report.longest_sections),
+            ("Longest bullets", report.longest_bullets),
+        ):
+            err.print(f"  {title}:")
+            for item in items:
+                err.print(f"    - {escape(item)}", highlight=False)
+    for warning in report.warnings:
+        err.print(f"[yellow]fit: {warning}[/yellow]", highlight=False)
+
+
+def _render(
+    yaml_path: Path, theme: str | None, out: Path | None, force: bool, pages: int | None = None
+) -> None:
     config = load_config()
+    if pages:
+        config = config.model_copy(update={"pages": pages})
     theme = theme or config.theme
     resume = _load_resume(yaml_path)
     state = verification_state(yaml_path) if resume.meta.source_file else "manual"
@@ -147,11 +178,12 @@ def _render(yaml_path: Path, theme: str | None, out: Path | None, force: bool) -
         err.print("[yellow]resume.yaml was edited after it passed verification.[/yellow]")
     pdf = (out or _out_dir(resume, yaml_path)) / f"{output_stem(resume, config)}.pdf"
     try:
-        render_pdf(build_view(resume, config), theme, config.paper, pdf)
+        report = fit(build_view(resume, config), theme, config.paper, pdf, config.pages)
     except FileNotFoundError as exc:
         raise _fail(f"Unknown theme {theme!r}:", exc) from exc
-    print(f"wrote {pdf}")
-    update_report(pdf.parent / "report.json", verification=state)
+    print(f"wrote {pdf} ({report.pages} page(s), theme {theme})")
+    _print_fit(report)
+    update_report(pdf.parent / "report.json", verification=state, theme=theme, fit=asdict(report))
     _check(pdf, config, resume)
 
 
@@ -209,9 +241,10 @@ def render(
     force: Annotated[
         bool, typer.Option("--force", help="Render even if verification failed.")
     ] = False,
+    pages: PagesOpt = None,
 ) -> None:
     """Render a resume.yaml to PDF, then run the ATS check on it."""
-    _render(yaml_path, theme, out, force)
+    _render(yaml_path, theme, out, force, pages)
 
 
 @app.command()
@@ -236,7 +269,7 @@ def check(
 
 
 @app.command()
-def run(source: SourceArg, theme: ThemeOpt = None) -> None:
+def run(source: SourceArg, theme: ThemeOpt = None, pages: PagesOpt = None) -> None:
     """The everyday command: ingest, verify, lint, render and check one source resume."""
     yaml_path = Path("out") / source.stem / "resume.yaml"
     if not _ingest(source, load_config(), yaml_path):
@@ -247,7 +280,27 @@ def run(source: SourceArg, theme: ThemeOpt = None) -> None:
         lint=[f"{w.location}: {w.rule}: {w.message}" for w in warnings],
     )
     print_lint(warnings, console)
-    _render(yaml_path, theme, None, force=False)
+    _render(yaml_path, theme, None, force=False, pages=pages)
+
+
+@app.command()
+def themes(
+    preview: Annotated[
+        bool, typer.Option("--preview", help="Render the example resume in every theme.")
+    ] = False,
+    out: Annotated[Path, typer.Option(help="Where --preview writes its PNGs.")] = Path(
+        "out/themes"
+    ),
+) -> None:
+    """List the themes; with --preview, render each one to PNG for comparison."""
+    config = load_config()
+    view = build_view(load_resume(resource("examples/resume.yaml")), config)
+    for name, description in list_themes().items():
+        default = " (default)" if name == config.theme else ""
+        console.print(f"[bold]{name}[/bold]{default}: {escape(description)}", highlight=False)
+        if preview:
+            for png in render_png(view, name, config.paper, out):
+                print(f"  wrote {png}")
 
 
 @app.command()

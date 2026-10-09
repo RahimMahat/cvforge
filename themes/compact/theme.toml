@@ -1,4 +1,4 @@
-# classic: clean, "Jake's Resume"-like. Black text, uppercase headings with a thin rule.
+# compact: the classic look at the dense end of every range, for fitting more on a page.
 # Sizes are pt, margin is mm, tracking is em, line_height is a multiple of the font size.
 
 font = "Source Serif 4"
@@ -8,15 +8,15 @@ rule = "#000000"          # line under section headings
 header = "plain"          # "plain" | "band" (name on a full-width band of the accent colour)
 accent_bullets = false
 
-name_size = 24
-headline_size = 11.5
-heading_size = 11
-heading_tracking = 0.08
+name_size = 22
+headline_size = 11
+heading_size = 10.5
+heading_tracking = 0.06
 heading_rule = true
-body_size = 10.5
-line_height = 1.25
+body_size = 10
+line_height = 1.2
 
-section_gap = 11
-entry_gap = 7
-item_gap = 3              # between bullets and between skill lines
-margin = 16
+section_gap = 10
+entry_gap = 6
+item_gap = 2              # between bullets and between skill lines
+margin = 14

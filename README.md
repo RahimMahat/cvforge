@@ -26,6 +26,22 @@ verification failed (override with `--force`); hand edits after a pass only warn
 `render` and `check` write `ats_view.txt` (the extracted text) and `report.json` beside the PDF
 and exit 1 if any check fails.
 
+## Themes and page fitting
+
+```
+uv run cvforge themes --preview                    # lists themes, writes out/themes/<theme>-1.png
+uv run cvforge run cv.html --theme modern --pages 1
+```
+
+- `classic` (default): serif, black, uppercase headings with a thin rule.
+- `modern`: sans-serif, name on a full-width colour band, accent headings and bullets.
+- `compact`: the classic look at the dense end of every range.
+
+All themes are single column and share `themes/base.typ`; a theme is a `theme.toml` of tokens.
+`--pages N` tightens spacing, then line height, body size and margins (in that order, within
+fixed floors) until the resume fits. If it cannot fit, nothing is dropped: the command reports
+how many lines over it is and exits 1.
+
 ## Extractors
 
 - `rules` (default): deterministic, no network.
