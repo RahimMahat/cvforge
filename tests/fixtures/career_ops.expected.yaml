@@ -1,0 +1,71 @@
+meta:
+  source_file: tests/fixtures/career_ops.html
+  source_tool: other
+basics:
+  name: Jane Doe
+  email: jane@example.com
+  phone: +91 90000 00000
+  location: Pune, Maharashtra, India
+  links:
+    - url: https://linkedin.com/in/jane-doe-a1b2c3
+      text: linkedin.com/in/jane-doe
+    - url: https://github.com/janedoe
+summary: Data engineer building efficient pipelines on AWS — Glue, S3 and Lambda — in Python and 
+  PySpark. Cut workflow latency by **50%** and storage costs by **30%**.
+skills:
+  - category: Programming
+    items:
+      - Python
+      - SQL
+      - Bash
+      - YAML/JSON
+  - category: AWS & Cloud
+    items:
+      - AWS (Glue, S3, Lambda)
+      - Amazon Redshift
+      - GCP
+experience:
+  - company: Example Corp
+    title: Senior Data Engineer
+    location: Pune, India
+    start: 2024-04
+    end: present
+    bullets:
+      - Architected efficient ETL pipelines using AWS Glue, **PySpark** and Jenkins, reducing 
+        latency by **50%**.
+      - Led Terraform & AWS CDK automation on Kubernetes, reducing manual effort by **40%**.
+      - Built a robust error-handling workflow, reducing failures by **25%**.
+  - company: Example Corp
+    title: Data Engineer
+    location: Nagpur, India
+    start: 2022-08
+    end: 2024-04
+    bullets:
+      - Tuned Redshift queries behind 60+ dashboards, improving execution times by **35%**.
+      - Optimized CI/CD pipelines using GitHub Actions for automated deployments.
+projects:
+  - name: Reusable Terraform Modules
+    url: https://github.com/janedoe/tf-modules
+    tech:
+      - Terraform
+      - AWS
+      - Infrastructure as Code
+    description: Developed reusable Terraform modules for AWS infrastructure automation.
+education:
+  - institution: Example Institute, Kolhapur, India
+    degree: Bachelor of Technology
+    end: 2022
+    details:
+      - Cumulative GPA 8.7 / 10
+certifications:
+  - name: SnowPro Core Certification
+    issuer: Snowflake
+  - name: Solutions Architect - Associate (In Progress)
+    issuer: AWS
+    date: 2023
+extra_sections:
+  - title: Core Competencies
+    items:
+      - ETL & ELT Pipeline Development
+      - Secure, Well-Governed Pipelines
+      - CI/CD Automation

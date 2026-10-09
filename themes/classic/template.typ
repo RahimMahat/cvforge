@@ -57,9 +57,10 @@
 // Header: name, headline and contact line, all in the page body.
 #block(text(size: t.name_size * 1pt, weight: "bold", fill: accent, data.name))
 #if data.headline != none { block(above: 6pt, text(size: t.headline_size * 1pt, data.headline)) }
-#block(above: 6pt, data.contact.map(c => {
+// Each item is a box so the line wraps between items, never inside a URL or phone number.
+#block(above: 6pt, data.contact.map(c => box({
   if c.url != none { link(c.url, c.text) } else { c.text }
-}).join(text(fill: muted, " | ")))
+})).join(text(fill: muted, " | ")))
 
 #for s in data.sections {
   heading(s.heading)

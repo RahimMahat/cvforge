@@ -142,7 +142,7 @@ def test_jd_coverage_is_informational():
 def test_render_writes_report_and_ats_view(tmp_path):
     result = runner.invoke(app, ["render", str(EXAMPLE), "--out", str(tmp_path)])
     assert result.exit_code == 0, result.output
-    report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))["check"]
     assert report["passed"] is True
     assert {"pdfplumber", "pypdf"} <= set(report["extractors"])
     assert {c["name"] for c in report["checks"]} >= {"Name", "Contact", "Glyphs", "PDF hygiene"}

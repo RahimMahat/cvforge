@@ -55,13 +55,11 @@ def contact_problems(resume: Resume | None, text: str) -> list[str]:
     if resume is None:
         missing = [] if _EMAIL_RE.search(text) else ["no email address found"]
         return missing + ([] if _PHONE_RE.search(text) else ["no phone number found"])
-    squashed = normalize(text).replace(" ", "")  # a long URL may wrap across lines
+    flat = normalize(text)  # a value split across lines has a space in it and will not match
     basics = resume.basics
     shown = [basics.email, basics.phone, *(ln.text or display_url(ln.url) for ln in basics.links)]
     return [
-        f"not extractable: {value!r}"
-        for value in shown
-        if value and normalize(value).replace(" ", "") not in squashed
+        f"not extractable: {value!r}" for value in shown if value and normalize(value) not in flat
     ]
 
 

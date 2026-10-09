@@ -7,6 +7,7 @@ from ruamel.yaml import YAML
 
 from cvforge.models import Resume
 
+_DATE_KEYS = ("start", "end", "date")
 _yaml = YAML()  # round-trip by default
 _yaml.indent(mapping=2, sequence=4, offset=2)
 _yaml.width = 100
@@ -27,5 +28,16 @@ def load_resume(path: Path) -> Resume:
 
 def dump_resume(resume: Resume, path: Path) -> None:
     """Write a fresh resume.yaml in schema order, leaving out empty fields."""
-    data = resume.model_dump(exclude_none=True)
-    dump_yaml({k: v for k, v in data.items() if v not in ([], {})}, path)
+    dump_yaml(_prune(resume.model_dump(exclude_none=True)), path)
+
+
+def _prune(value: Any) -> Any:
+    """Drop empty lists and dicts at every level; write bare years as numbers (start: 2018)."""
+    if isinstance(value, dict):
+        pruned = {key: _prune(item) for key, item in value.items()}
+        return {
+            key: int(item) if key in _DATE_KEYS and str(item).isdigit() else item
+            for key, item in pruned.items()
+            if item not in ([], {})
+        }
+    return [_prune(item) for item in value] if isinstance(value, list) else value

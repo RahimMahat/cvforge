@@ -3,6 +3,7 @@
 import json
 from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 
 from rich.console import Console
 from rich.markup import escape
@@ -14,8 +15,8 @@ from cvforge.lint import LintWarning
 _STYLE = {"pass": "green", "warn": "yellow", "fail": "bold red", "info": "cyan"}
 
 
-def print_checks(results: list[CheckResult], console: Console) -> None:
-    table = Table(title="ATS check", title_justify="left", show_lines=True)
+def print_checks(results: list[CheckResult], console: Console, title: str = "ATS check") -> None:
+    table = Table(title=title, title_justify="left", show_lines=True)
     table.add_column("Check")
     table.add_column("Result")
     table.add_column("Details", overflow="fold")
@@ -38,11 +39,21 @@ def print_lint(warnings: list[LintWarning], console: Console) -> None:
     console.print(table)
 
 
-def write_report(path: Path, pdf: Path, results: list[CheckResult], extractors: list[str]) -> None:
-    report = {
-        "pdf": pdf.name,
-        "extractors": extractors,
+def check_section(
+    pdf: Path | None, results: list[CheckResult], extractors: list[str] | None = None
+) -> dict[str, Any]:
+    """One stage's results in the shape report.json stores them."""
+    section: dict[str, Any] = {
         "passed": not any(result.status == "fail" for result in results),
         "checks": [asdict(result) for result in results],
     }
+    if pdf:
+        section = {"pdf": pdf.name, "extractors": extractors, **section}
+    return section
+
+
+def update_report(path: Path, **sections: Any) -> None:
+    """Merge sections into report.json, keeping what earlier stages wrote."""
+    report = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    report.update(sections)
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

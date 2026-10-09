@@ -43,7 +43,7 @@ class Meta(_Model):
 
 
 class Link(_Model):
-    label: str
+    label: str | None = None  # e.g. LinkedIn; not rendered
     url: str
     text: str | None = None  # visible text, if the source showed something shorter than the url
 

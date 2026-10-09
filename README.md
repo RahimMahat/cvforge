@@ -12,10 +12,16 @@ Spec: [cvforge-build-prompt.md](cvforge-build-prompt.md).
 uv sync
 uv run cvforge init      # creates cvforge.toml and an example resume.yaml
 uv run cvforge schema    # prints the JSON Schema of resume.yaml
+uv run cvforge run cv.html                   # everyday: ingest, verify, lint, render, check
+uv run cvforge ingest cv.tex [-o resume.yaml]  # source -> resume.yaml, then verify
+uv run cvforge verify cv.tex resume.yaml      # prove the YAML says what the source says
 uv run cvforge render examples/resume.yaml   # writes out/resume/Jane_Doe_Resume.pdf, then checks it
 uv run cvforge check <pdf> --yaml resume.yaml [--jd jd.txt]   # what an ATS parser would see
 uv run cvforge lint resume.yaml              # style warnings only, nothing is changed
 ```
+
+Everything for one source lands in `out/<source-stem>/`. `render` refuses a YAML whose
+verification failed (override with `--force`); hand edits after a pass only warn.
 
 `render` and `check` write `ats_view.txt` (the extracted text) and `report.json` beside the PDF
 and exit 1 if any check fails.

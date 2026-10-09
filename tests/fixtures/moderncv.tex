@@ -1,0 +1,82 @@
+%% CV - Jane Doe - synthetic fixture
+\documentclass[11pt,a4paper,sans]{moderncv}
+\moderncvstyle{banking}
+\moderncvcolor{blue}
+\usepackage[scale=0.80]{geometry}
+\usepackage{needspace}
+
+% personal data
+\name{Jane}{Doe}
+\address{Pune, Maharashtra, India}{}{}
+\phone[mobile]{+91 90000 00000}
+\email{jane@example.com}
+\extrainfo{\href{https://www.linkedin.com/in/jane-doe}{LinkedIn}, \href{https://github.com/janedoe}{GitHub}}
+
+\begin{document}
+
+\makecvtitle
+
+\vspace{6pt}
+\small{Data engineer with 4+ years building efficient pipelines on AWS (Lambda, Glue, S3) in Python and PySpark. Owns the workflow end to end; Kubernetes is the platform to grow on next.} % trailing comment, 100\% ignored
+
+\section{Core Competencies}
+\vspace{1pt}
+\begin{itemize}
+
+\item \textbf{Data Pipelines}: batch and event-driven pipelines in Python and PySpark, advanced SQL.
+
+\item \textbf{Infrastructure as Code and CI/CD}: Terraform, AWS CDK, Jenkins \& GitHub Actions.
+
+\end{itemize}
+
+\section{Professional Experience}
+\vspace{3pt}
+\begin{itemize}
+
+\item{\cventry{Apr 2024 - Present}{Data Engineer - III (promoted from Data Engineer - II in Apr 2026)}{Example Corp}{Pune, India}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Built an event API with a Lambda draining batches of up to 1,000 messages, cutting manual effort by 40\%.}
+    \item {Declared 154 Glue tables and 5,000+ columns in Terraform -- the most of any contributor.}
+    \item {Rewrote a workflow that reschedules 400+ flows, covered by 33 unit tests.}
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{Aug 2022 - Apr 2024}{Data Engineer - I}{Example Corp}{Nagpur, India}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Modelled one Redshift star schema fed by 29 PySpark processors, each tested with pytest.}
+    \item {Tuned the serving layer: 35\% faster queries, about 30\% lower storage cost.}
+\end{itemize}}}
+
+\end{itemize}
+
+\section{Projects}
+\vspace{1pt}
+\begin{itemize}
+\item \textbf{\href{https://github.com/janedoe/lakehouse-lab}{LakehouseLab}} (2026, personal): lakehouse with 31 data quality checks; accuracy rose from 63.5\% to 98.0\%.
+\end{itemize}
+
+\section{Education}
+\vspace{1pt}
+\begin{itemize}
+
+\item{\cventry{2018-2022}{Bachelor of Technology in Computer Engineering}{Example Institute of Technology}{Kolhapur, India}{}{\vspace{1pt}
+Example Technological University. First Class with Distinction, CGPA 8.65/10.
+}}
+
+\end{itemize}
+
+\section{Languages}
+\vspace{1pt}
+\begin{itemize}
+\item {English (professional working proficiency), Marathi (spoken).}
+\end{itemize}
+
+\section{References}
+\vspace{1pt}
+\begin{itemize}
+\item{Available upon request.}
+\end{itemize}
+
+\end{document}

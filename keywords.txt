@@ -1,0 +1,22 @@
+# Keywords the faithfulness guard must never lose between a source and its resume.yaml.
+# One term per line, matched case-insensitively. Tech-shaped tokens (PySpark, AWS, S3, CI/CD)
+# are caught automatically; this list is for terms that look like ordinary words.
+airflow
+athena
+databricks
+dbt
+delta lake
+denodo
+docker
+glue
+kafka
+kubernetes
+lambda
+parquet
+pytest
+python
+redshift
+snowflake
+spark
+sql
+terraform

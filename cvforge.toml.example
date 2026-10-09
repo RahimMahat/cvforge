@@ -21,3 +21,18 @@ section_order = [
   "languages",
   "extra_sections",
 ]
+
+# --- ingestion ---
+drop_sections = ["references"]   # source headings left out of the resume; every drop is reported
+keywords_path = "keywords.txt"   # extra keywords verify must never lose (bundled list if absent)
+
+# Tables below ADD to the built-in defaults (see src/cvforge/config.py for the full lists).
+#
+# [heading_synonyms]             # source heading -> schema section; unknown headings stay as-is
+# projects = ["projects", "technical contributions"]
+#
+# [html_classes]                 # HTML class -> role (org, title, dates, location, ...)
+# "role-name" = "title"
+#
+# [latex_macros]                 # macro -> role of each {argument}; "" ignores one
+# resumeSubheading = ["org", "location", "title", "dates"]
