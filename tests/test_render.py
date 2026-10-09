@@ -160,3 +160,30 @@ def _contrast_on_white(hex_color: str) -> float:
 def test_example_config_matches_defaults():
     example = tomllib.loads(resource("cvforge.toml.example").read_text(encoding="utf-8"))
     assert Config.model_validate(example) == Config()
+
+
+def test_extra_sections_render_after_their_anchor_and_tags_go_inline():
+    resume = Resume.model_validate(
+        {
+            "basics": {"name": "Jane Doe"},
+            "summary": "A summary.",
+            "skills": [{"category": "Languages", "items": ["Python"]}],
+            "extra_sections": [
+                {"title": "Core Competencies", "after": "summary", "items": ["CI/CD", "Snowflake"]},
+                {"title": "Volunteering", "items": ["Taught a SQL workshop for 120 students."]},
+                {"title": "Talks", "after": "awards", "items": ["One talk", "**Bold** talk"]},
+            ],
+        }
+    )
+    sections = build_view(resume, Config())["sections"]
+    assert [s["heading"] for s in sections] == [
+        "Summary",
+        "Core Competencies",
+        "Skills",
+        "Talks",  # its anchor section is empty, but it keeps that position
+        "Volunteering",  # no anchor: at the extra_sections slot
+    ]
+    kinds = {s["heading"]: s["blocks"][0]["kind"] for s in sections}
+    assert kinds["Core Competencies"] == "inline"  # short tags share one line
+    assert kinds["Volunteering"] == "bullets"  # a single sentence stays a bullet
+    assert kinds["Talks"] == "bullets"  # bold text is not a plain tag

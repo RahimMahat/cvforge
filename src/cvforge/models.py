@@ -113,8 +113,22 @@ class Language(_Model):
     fluency: Text | None = None
 
 
+SectionKey = Literal[
+    "summary",
+    "skills",
+    "experience",
+    "projects",
+    "education",
+    "certifications",
+    "awards",
+    "publications",
+    "languages",
+]
+
+
 class ExtraSection(_Model):
     title: Text
+    after: SectionKey | None = None  # render right after this section; unset means at the end
     items: list[Text]
 
 

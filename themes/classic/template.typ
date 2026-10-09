@@ -73,6 +73,9 @@
       if b.kind == "paragraph" { block(above: above, rich(b.segments)) }
       if b.kind == "labeled" { block(above: above, [#strong(b.label + ":") #rich(b.segments)]) }
       if b.kind == "bullets" { block(above: above, list(..b.items.map(rich))) }
+      if b.kind == "inline" {
+        block(above: above, b.items.map(rich).join(text(fill: muted, " | ")))
+      }
     }
   }
 }

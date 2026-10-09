@@ -65,6 +65,7 @@ certifications:
     date: 2023
 extra_sections:
   - title: Core Competencies
+    after: summary
     items:
       - ETL & ELT Pipeline Development
       - Secure, Well-Governed Pipelines

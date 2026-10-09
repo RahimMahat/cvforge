@@ -4,6 +4,7 @@ The view is plain data: a name, a contact line and sections of blocks. Block kin
   paragraph  {segments}
   labeled    {label, segments}            e.g. Languages: Python, SQL
   bullets    {items: [segments]}
+  inline     {items: [segments]}          short tags on one line, e.g. CI/CD | Snowflake
   entry      {lines: [{left, right, style}], paragraphs, bullets, continued}
 """
 
@@ -18,6 +19,7 @@ from cvforge.models import Education, Experience, Project, Resume
 from cvforge.render.segments import Segment, to_segments
 
 Block = dict[str, Any]
+MAX_TAG_CHARS = 40
 
 HEADINGS = {
     "summary": "Summary",
@@ -69,7 +71,11 @@ def _entry(
 
 
 def _bullets(items: list[str]) -> Block:
-    return {"kind": "bullets", "items": [to_segments(item) for item in items]}
+    """A bullet list, or one line when every item is a short tag rather than a sentence."""
+    tags = len(items) > 1 and all(
+        len(item) <= MAX_TAG_CHARS and "**" not in item and not item.endswith(".") for item in items
+    )
+    return {"kind": "inline" if tags else "bullets", "items": [to_segments(i) for i in items]}
 
 
 def _dated(name: str, by: str | None, when: str | None, fmt: str) -> Block:
@@ -163,15 +169,15 @@ def _contact(resume: Resume) -> list[dict[str, str | None]]:
 
 def build_view(resume: Resume, config: Config) -> dict[str, Any]:
     sections = []
+    extras = [extra for extra in resume.extra_sections if extra.items]
     for key in config.section_order:
-        if key == "extra_sections":
-            sections += [
-                {"heading": extra.title, "blocks": [_bullets(extra.items)]}
-                for extra in resume.extra_sections
-                if extra.items
-            ]
-        elif blocks := _blocks(resume, key, config.date_format):
-            sections.append({"heading": HEADINGS[key], "blocks": blocks})
+        if key == "extra_sections":  # those not pinned after a section that is being rendered
+            placed = [e for e in extras if e.after not in config.section_order]
+        else:
+            if blocks := _blocks(resume, key, config.date_format):
+                sections.append({"heading": HEADINGS[key], "blocks": blocks})
+            placed = [e for e in extras if e.after == key]
+        sections += [{"heading": e.title, "blocks": [_bullets(e.items)]} for e in placed]
     return {
         "name": resume.basics.name,
         "headline": resume.basics.headline,
@@ -199,7 +205,7 @@ def flatten(view: dict[str, Any]) -> list[tuple[str, str]]:
                     items.append(("text", _text(block["segments"])))
                 case "labeled":
                     items.append(("text", f"{block['label']}: {_text(block['segments'])}"))
-                case "bullets":
+                case "bullets" | "inline":
                     items += [("bullet", _text(item)) for item in block["items"]]
                 case "entry":
                     for line in block["lines"]:

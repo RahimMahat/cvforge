@@ -56,6 +56,7 @@ class _Builder:
         self.unplaced: list[str] = []
         self.section: str | None = None  # schema key, "extra", or None before the first heading
         self.heading = ""
+        self.anchor: str | None = None  # the last standard section seen, for placing extras
         self.entry: dict[str, Any] | None = None
         self.entry_section = ""
         self.category: str | None = None
@@ -67,7 +68,7 @@ class _Builder:
         sections = self.data["extra_sections"]
         found = next((s for s in sections if s["title"] == title), None)
         if not found:
-            found = {"title": title, "items": []}
+            found = {"title": title, "after": self.anchor, "items": []}
             sections.append(found)
         found["items"].append(text)
 
@@ -191,14 +192,19 @@ class _Builder:
             self.close_entry()
             self.heading = block.text
             self.section = self.config.section_for(block.text) or "extra"
+            if self.section != "extra":
+                self.anchor = self.section
             self.category = None
         else:
             section = block.section or self.section
+            if block.section:
+                self.anchor = block.section
             if section in _FIELDS:
                 self.entry_block(block, section)
             elif section in (None, "summary"):
                 if "summary" not in self.data and block.kind != "bullet":
                     self.data["summary"] = block.text
+                    self.anchor = "summary"
                 else:
                     self.unplace(block.text)
             elif section == "skills":

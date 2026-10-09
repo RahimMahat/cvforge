@@ -47,9 +47,11 @@ education:
       - Example Technological University. First Class with Distinction, CGPA 8.65/10.
 extra_sections:
   - title: Core Competencies
+    after: summary
     items:
       - '**Data Pipelines**: batch and event-driven pipelines in Python and PySpark, advanced SQL.'
       - '**Infrastructure as Code and CI/CD**: Terraform, AWS CDK, Jenkins & GitHub Actions.'
   - title: Languages
+    after: languages
     items:
       - English (professional working proficiency), Marathi (spoken).
