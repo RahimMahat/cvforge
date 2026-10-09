@@ -1,0 +1,45 @@
+[project]
+name = "cvforge"
+version = "0.1.0"
+description = "Deterministic, ATS-safe resume formatter"
+readme = "README.md"
+authors = [
+    { name = "RahimMahat", email = "rahimmahat99@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "rich>=13",
+    "ruamel.yaml>=0.18",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic"]
+watch = ["watchdog"]
+tui = ["textual"]
+
+[project.scripts]
+cvforge = "cvforge.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Root-level resources ship inside the wheel; see cvforge.config.resource().
+[tool.hatch.build.targets.wheel.force-include]
+"cvforge.toml.example" = "cvforge/_data/cvforge.toml.example"
+"examples" = "cvforge/_data/examples"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

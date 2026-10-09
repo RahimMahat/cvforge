@@ -1,0 +1,24 @@
+# cvforge settings. Every key is optional; the values below are the defaults.
+
+theme = "classic"
+pages = 2                    # maximum page count
+paper = "a4"                 # "a4" | "us-letter"
+formats = ["pdf", "docx", "txt", "md"]
+
+date_format = "%b %Y"        # how YYYY-MM dates are displayed: Jun 2023
+keep_heading_text = false    # true: keep the source's heading wording instead of standard words
+company_suffix = false       # true: Jane_Doe_Resume_Acme.pdf
+max_file_mb = 2.0
+
+section_order = [
+  "summary",
+  "skills",
+  "experience",
+  "projects",
+  "education",
+  "certifications",
+  "awards",
+  "publications",
+  "languages",
+  "extra_sections",
+]

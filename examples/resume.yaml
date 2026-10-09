@@ -1,0 +1,86 @@
+# Example resume.yaml (synthetic data). This file is the single source of truth:
+# edit it by hand, then run `cvforge render resume.yaml`.
+# Dates are YYYY-MM or YYYY; `end: present` is allowed. The only inline markup is **bold**.
+meta:
+  source_tool: manual
+  target_role: Senior Data Engineer
+basics:
+  name: Jane Doe
+  headline: Senior Data Engineer
+  email: jane@example.com
+  phone: "+91 90000 00000"
+  location: Pune, India
+  links:
+    - label: LinkedIn
+      url: https://linkedin.com/in/janedoe
+    - label: GitHub
+      url: https://github.com/janedoe
+summary: >-
+  Data engineer with 6+ years building efficient batch and streaming pipelines on AWS in
+  Python, PySpark and SQL. Comfortable owning a workflow end to end, from ingestion and
+  modelling to orchestration on Kubernetes and infrastructure as code.
+skills:
+  - category: Languages
+    items: [Python, SQL, Bash]
+  - category: AWS
+    items: [Glue, S3, Lambda, Redshift, Athena]
+  - category: Data
+    items: [PySpark, dbt, Airflow, Delta Lake]
+  - category: Platform
+    items: [Kubernetes, Terraform, Docker, GitHub Actions, CI/CD]
+experience:
+  - company: Example Corp
+    title: Senior Data Engineer
+    location: Pune, India
+    start: 2023-06
+    end: present
+    bullets:
+      - Built **AWS Glue** and **PySpark** pipelines processing 2TB+ of clickstream data per day,
+        making the nightly workflow 40% more efficient and cutting the Redshift bill by ₹12L a year.
+      - Migrated 35 Airflow DAGs to a Kubernetes executor with zero missed SLAs, and wrote the
+        runbook the on-call team still uses to keep the workflow efficient under load.
+      - Mentored 4 engineers on testing, code review and incremental data modelling with dbt.
+  - company: Example Corp
+    title: Data Engineer
+    location: Pune, India
+    start: 2021-07
+    end: 2023-05
+    bullets:
+      - Designed a star schema on Redshift serving 60+ dashboards, with **35%** faster queries.
+      - Automated schema-drift checks in C# and Python, catching 90% of breaking changes in CI.
+  - company: Sample Analytics Pvt. Ltd.
+    title: Associate Data Engineer
+    location: Nagpur, India
+    start: 2019-08
+    end: 2021-06
+    bullets:
+      - "Wrote Python & SQL jobs loading 14 partner feeds into S3, tracked in issue #42 onwards."
+projects:
+  - name: lakehouse-lab
+    url: https://github.com/janedoe/lakehouse-lab
+    tech: [PySpark, Delta Lake, dbt]
+    bullets:
+      - Local bronze, silver and gold lakehouse with 49 dbt tests and an efficient incremental
+        workflow that rebuilds only changed partitions.
+education:
+  - institution: Example Institute of Technology
+    degree: Bachelor of Technology
+    field: Computer Science
+    location: Kolhapur, India
+    start: 2015
+    end: 2019
+    details:
+      - CGPA 8.7 / 10
+certifications:
+  - name: SnowPro Core Certification
+    issuer: Snowflake
+    date: 2022
+languages:
+  - language: English
+    fluency: Professional working proficiency
+  - language: Marathi
+    fluency: Native
+extra_sections:
+  - title: Volunteering
+    items:
+      - Taught an introductory SQL workshop for 120 students at a community college.
