@@ -1,9 +1,9 @@
 # cvforge
 
-Deterministic, ATS-safe resume formatter. It takes resume content from another tool
-(career-ops HTML, ai-job-search LaTeX, or Markdown, JSON Resume, plain text, PDF), maps it to a
-hand-editable `resume.yaml`, proves nothing was changed, and typesets it as PDF, DOCX, TXT and
-Markdown.
+Deterministic, ATS-safe resume formatter. It typesets a hand-editable `resume.yaml` as PDF,
+DOCX, TXT and Markdown. You can write that file yourself, or have cvforge build it from another
+tool's output (career-ops HTML, ai-job-search LaTeX, or Markdown, JSON Resume, plain text, PDF)
+and prove nothing was changed on the way.
 
 - **Content is never rewritten.** The tool restructures and typesets; a faithfulness check
   compares the YAML against the source and blocks rendering if anything was added, dropped,
@@ -27,12 +27,36 @@ Python 3.12+. Optional extras: `tui` (terminal UI), `llm` (the `anthropic` extra
 
 ## Quick start
 
+There are two ways in. Both end at the same `resume.yaml` and the same outputs.
+
+### From scratch: no existing resume needed
+
+```
+cvforge init                    # writes cvforge.toml and an example resume.yaml
+# edit resume.yaml: replace the example content with your own
+cvforge lint resume.yaml        # optional: style warnings on your wording
+cvforge render resume.yaml      # PDF, DOCX, TXT and Markdown in out/resume/, then the ATS check
+```
+
+The example file shows every section; delete the ones you don't need (only `basics.name` is
+required). `cvforge schema` prints the exact shape, and the [resume.yaml](#resumeyaml) section
+below covers the rules. Re-run `render` after each edit, with `--theme` and `--pages` as you like.
+A hand-written file has no source to be compared against, so the faithfulness check is skipped;
+the ATS check on the PDF still runs every time.
+
+### From another tool's file
+
 ```
 cvforge run cv.html                          # ingest, verify, lint, render, check
 cvforge run cv.tex --theme modern --pages 1
 ```
 
-Everything for one source lands in `out/<source-stem>/`:
+This builds `resume.yaml` for you and verifies it against the source. You can still edit it by
+hand afterwards and re-run `cvforge render out/<source-stem>/resume.yaml`.
+
+### What you get
+
+Everything lands in `out/<source-stem>/` (for a hand-written file, `out/<yaml-name>/`):
 
 | File | What it is |
 |---|---|
