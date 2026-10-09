@@ -231,6 +231,26 @@ class _Builder:
                 self.unplace(block.text)
 
 
+def source_headings(doc: SourceDoc, config: Config) -> dict[str, str]:
+    """Standard section -> the heading the source used for it, e.g. experience: Work Experience.
+
+    A heading the synonyms do not know still counts when the template marks the entries
+    under it, as with a "Technical Contributions" section made of project entries.
+    """
+    found: dict[str, str] = {}
+    pending = ""
+    for block in doc.blocks:
+        if block.kind == "heading":
+            pending = block.text
+            if key := config.section_for(pending):
+                found.setdefault(key, pending)
+                pending = ""
+        elif pending and block.section:
+            found.setdefault(block.section, pending)
+            pending = ""
+    return found
+
+
 def extract(doc: SourceDoc, config: Config, meta: Meta) -> Extraction:
     builder = _Builder(config)
     for block in doc.blocks:

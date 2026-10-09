@@ -35,11 +35,26 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+SectionKey = Literal[
+    "summary",
+    "skills",
+    "experience",
+    "projects",
+    "education",
+    "certifications",
+    "awards",
+    "publications",
+    "languages",
+]
+
+
 class Meta(_Model):
     source_file: str | None = None
     source_tool: Literal["career-ops", "ai-job-search", "manual", "other"] = "manual"
     target_role: str | None = None
     target_company: str | None = None
+    # The source's own wording for each section, used when keep_heading_text is on.
+    headings: dict[SectionKey, str] = Field(default_factory=dict)
 
 
 class Link(_Model):
@@ -111,19 +126,6 @@ class Publication(_Model):
 class Language(_Model):
     language: Text
     fluency: Text | None = None
-
-
-SectionKey = Literal[
-    "summary",
-    "skills",
-    "experience",
-    "projects",
-    "education",
-    "certifications",
-    "awards",
-    "publications",
-    "languages",
-]
 
 
 class ExtraSection(_Model):

@@ -28,6 +28,13 @@ verification failed (override with `--force`); hand edits after a pass only warn
 `render` and `check` write `ats_view.txt` (the extracted text) and `report.json` beside the PDF
 and exit 1 if any check fails.
 
+## Headings
+
+Section headings are rendered as standard words (Summary, Skills, Experience, ...), which is
+what parsers look for. `resume.yaml` still records the source's own wording under
+`meta.headings`; set `keep_heading_text = true` in `cvforge.toml` to render that instead
+("Work Experience", "Technical Contributions"). The ATS check then flags them as non-standard.
+
 ## Inputs
 
 | Input | How much structure is recovered |
@@ -92,6 +99,13 @@ how many lines over it is and exits 1.
 - `anthropic` (optional): `uv sync --extra llm`, set `ANTHROPIC_API_KEY`, then
   `cvforge ingest cv.html --extractor anthropic`. The model comes from `llm_model` in
   `cvforge.toml`. Its output goes through the same verification as the rules extractor.
+
+## Install as a command
+
+```
+uv tool install ".[tui]"            # puts cvforge on your PATH
+uv tool install --reinstall ".[tui]"   # after pulling changes
+```
 
 ## Development
 

@@ -108,6 +108,7 @@ class Config(BaseModel):
     date_format: str = "%b %Y"  # Jun 2023
     section_order: list[str] = DEFAULT_SECTION_ORDER
     company_suffix: bool = False
+    keep_heading_text: bool = False  # render the source's heading wording
     max_file_mb: float = 2.0
     drop_sections: list[str] = ["references"]  # source headings to leave out, always reported
     keywords_path: str = "keywords.txt"

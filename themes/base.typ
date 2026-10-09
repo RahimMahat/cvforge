@@ -45,6 +45,24 @@
   }
   let rich(segs) = segs.map(seg).join()
 
+  // Items joined by a separator, wrapped between items: a line never ends on the separator.
+  let joined(items, sep) = layout(size => {
+    let lines = ((),)
+    let used = 0pt
+    let gap = measure(sep).width
+    for item in items {
+      let width = measure(item).width
+      if lines.last().len() > 0 and used + gap + width > size.width {
+        lines.push(())
+        used = 0pt
+      }
+      if lines.last().len() > 0 { used += gap }
+      lines.last().push(item)
+      used += width
+    }
+    lines.map(line => line.join(sep)).join(linebreak())
+  })
+
   // One line: text on the left, dates or location pushed right with h(1fr).
   let row(l, above) = block(above: above, sticky: true, {
     let left = rich(l.left)
@@ -70,9 +88,9 @@
     }
     // Each item is a box so the line wraps between items, never inside a URL or phone number.
     let sep = text(fill: if band { white.transparentize(45%) } else { muted }, " | ")
-    block(above: 7pt, data.contact.map(c => box({
+    block(above: 7pt, joined(data.contact.map(c => box({
       if c.url != none { link(c.url, c.text) } else { c.text }
-    })).join(sep))
+    })), sep))
   }
   if band {
     // A band of the accent colour bleeding to the page edges; the text stays ordinary body text.
@@ -98,7 +116,7 @@
         if b.kind == "labeled" { block(above: above, [#strong(b.label + ":") #rich(b.segments)]) }
         if b.kind == "bullets" { block(above: above, list(..b.items.map(rich))) }
         if b.kind == "inline" {
-          block(above: above, b.items.map(rich).join(text(fill: muted, " | ")))
+          block(above: above, joined(b.items.map(i => box(rich(i))), text(fill: muted, " | ")))
         }
       }
     }

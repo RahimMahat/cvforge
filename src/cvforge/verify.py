@@ -160,6 +160,12 @@ def verify(doc: SourceDoc, resume: Resume, config: Config) -> list[CheckResult]:
     added += [
         f"{where}: {text!r}" for where, text in units.parts if normalize(text) not in haystack
     ]
+    source_headings = {normalize(b.text) for b in doc.blocks if b.kind == "heading"}
+    added += [
+        f"meta.headings.{key}: {text!r}"
+        for key, text in resume.meta.headings.items()
+        if normalize(text) not in source_headings
+    ]
     added += [
         f"{where}: {url!r}"
         for where, url in units.urls

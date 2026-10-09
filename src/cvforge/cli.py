@@ -21,7 +21,7 @@ from cvforge.check.report import check_section, print_checks, print_lint, update
 from cvforge.config import CONFIG_NAME, Config, load_config, resource
 from cvforge.export import to_jsonresume
 from cvforge.extract.llm import extract_llm
-from cvforge.extract.rules import extract
+from cvforge.extract.rules import extract, source_headings
 from cvforge.ingest import load_source
 from cvforge.ingest.sourcedoc import split_dropped
 from cvforge.lint import lint as lint_resume
@@ -113,7 +113,8 @@ def _ingest(
     try:
         doc, dropped = split_dropped(load_source(source, config), config)
         tool = next((t for t in _TOOLS if t in source.resolve().parts), "other")
-        meta = Meta(source_file=source.as_posix(), source_tool=tool)
+        headings = source_headings(doc, config)
+        meta = Meta(source_file=source.as_posix(), source_tool=tool, headings=headings)
         mapper = extract_llm if extractor is Extractor.anthropic else extract
         extraction = mapper(doc, config, meta)
     except (OSError, ValueError) as exc:  # a pydantic ValidationError is a ValueError

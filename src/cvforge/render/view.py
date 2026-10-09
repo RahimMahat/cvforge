@@ -175,7 +175,8 @@ def build_view(resume: Resume, config: Config) -> dict[str, Any]:
             placed = [e for e in extras if e.after not in config.section_order]
         else:
             if blocks := _blocks(resume, key, config.date_format):
-                sections.append({"heading": HEADINGS[key], "blocks": blocks})
+                kept = resume.meta.headings.get(key) if config.keep_heading_text else None
+                sections.append({"heading": kept or HEADINGS[key], "blocks": blocks})
             placed = [e for e in extras if e.after == key]
         sections += [{"heading": e.title, "blocks": [_bullets(e.items)]} for e in placed]
     return {

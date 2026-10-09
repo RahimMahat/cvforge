@@ -7,6 +7,7 @@ formats = ["pdf", "docx", "txt", "md"]
 
 date_format = "%b %Y"        # how YYYY-MM dates are displayed: Jun 2023
 company_suffix = false       # true: Jane_Doe_Resume_Acme.pdf
+keep_heading_text = false    # true: keep the source's heading wording (Work Experience)
 max_file_mb = 2.0
 
 section_order = [
