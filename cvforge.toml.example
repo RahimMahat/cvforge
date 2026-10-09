@@ -25,6 +25,7 @@ section_order = [
 # --- ingestion ---
 drop_sections = ["references"]   # source headings left out of the resume; every drop is reported
 keywords_path = "keywords.txt"   # extra keywords verify must never lose (bundled list if absent)
+llm_model = "claude-opus-5-5"    # only used by --extractor anthropic (needs ANTHROPIC_API_KEY)
 
 # Tables below ADD to the built-in defaults (see src/cvforge/config.py for the full lists).
 #

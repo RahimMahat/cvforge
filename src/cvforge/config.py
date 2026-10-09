@@ -111,6 +111,7 @@ class Config(BaseModel):
     max_file_mb: float = 2.0
     drop_sections: list[str] = ["references"]  # source headings to leave out, always reported
     keywords_path: str = "keywords.txt"
+    llm_model: str = "claude-opus-5-5"  # used only by --extractor anthropic
     heading_synonyms: dict[str, list[str]] = HEADING_SYNONYMS
     html_classes: dict[str, str] = HTML_CLASSES
     latex_macros: dict[str, list[str]] = LATEX_MACROS

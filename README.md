@@ -26,6 +26,15 @@ verification failed (override with `--force`); hand edits after a pass only warn
 `render` and `check` write `ats_view.txt` (the extracted text) and `report.json` beside the PDF
 and exit 1 if any check fails.
 
+## Extractors
+
+- `rules` (default): deterministic, no network.
+- Claude Code skill: ask Claude Code to "format this resume"; it runs the rules extractor, fixes
+  the mapping by hand if verification fails, then renders (`.claude/skills/format-resume`).
+- `anthropic` (optional): `uv sync --extra llm`, set `ANTHROPIC_API_KEY`, then
+  `cvforge ingest cv.html --extractor anthropic`. The model comes from `llm_model` in
+  `cvforge.toml`. Its output goes through the same verification as the rules extractor.
+
 ## Development
 
 ```

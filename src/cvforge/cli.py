@@ -4,6 +4,7 @@ import json
 import re
 import shutil
 import sys
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -17,6 +18,7 @@ from cvforge.check.ats import run_checks
 from cvforge.check.extract_text import PRIMARY
 from cvforge.check.report import check_section, print_checks, print_lint, update_report
 from cvforge.config import CONFIG_NAME, Config, load_config, resource
+from cvforge.extract.llm import extract_llm
 from cvforge.extract.rules import extract
 from cvforge.ingest import load_source
 from cvforge.ingest.sourcedoc import split_dropped
@@ -34,6 +36,16 @@ console = Console()
 _TOOLS = ("career-ops", "ai-job-search")
 SourceArg = Annotated[Path, typer.Argument(help="Source resume (.html or .tex).")]
 ThemeOpt = Annotated[str | None, typer.Option(help="Theme name; default from config.")]
+
+
+class Extractor(StrEnum):
+    rules = "rules"
+    anthropic = "anthropic"
+
+
+ExtractorOpt = Annotated[
+    Extractor, typer.Option(help="rules is deterministic; anthropic calls the Claude API.")
+]
 
 
 @app.callback()
@@ -81,14 +93,22 @@ def _check(pdf: Path, config: Config, resume: Resume | None, jd: str | None = No
         raise typer.Exit(1)
 
 
-def _ingest(source: Path, config: Config, yaml_path: Path) -> bool:
+def _ingest(
+    source: Path, config: Config, yaml_path: Path, extractor: Extractor = Extractor.rules
+) -> bool:
     """Source -> resume.yaml, then verify it. Returns whether verification passed."""
     try:
         doc, dropped = split_dropped(load_source(source, config), config)
         tool = next((t for t in _TOOLS if t in source.resolve().parts), "other")
-        extraction = extract(doc, config, Meta(source_file=source.as_posix(), source_tool=tool))
+        meta = Meta(source_file=source.as_posix(), source_tool=tool)
+        mapper = extract_llm if extractor is Extractor.anthropic else extract
+        extraction = mapper(doc, config, meta)
     except (OSError, ValueError) as exc:  # a pydantic ValidationError is a ValueError
         raise _fail(f"Cannot ingest {source}:", exc) from exc
+    except Exception as exc:  # the anthropic SDK's errors: missing key, network, API status
+        if extractor is not Extractor.anthropic:
+            raise
+        raise _fail("The anthropic extractor failed:", exc) from exc
     yaml_path.parent.mkdir(parents=True, exist_ok=True)
     dump_resume(extraction.resume, yaml_path)
     print(f"wrote {yaml_path}")
@@ -147,10 +167,11 @@ def ingest(
     output: Annotated[
         Path | None, typer.Option("-o", "--output", help="Where to write the YAML.")
     ] = None,
+    extractor: ExtractorOpt = Extractor.rules,
 ) -> None:
-    """Map a source resume to resume.yaml with the rules extractor, then verify it."""
+    """Map a source resume to resume.yaml, then verify it against the source."""
     yaml_path = output or Path("out") / source.stem / "resume.yaml"
-    if not _ingest(source, load_config(), yaml_path):
+    if not _ingest(source, load_config(), yaml_path, extractor):
         raise typer.Exit(1)
 
 
