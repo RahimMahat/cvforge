@@ -379,6 +379,24 @@ def watch(
         print("stopped")
 
 
+@app.command()
+def tui(
+    directory: Annotated[
+        Path, typer.Argument(help="Folder holding .html and .tex resumes.")
+    ] = Path("."),
+) -> None:
+    """Pick a resume, theme and page limit in a terminal UI; see pages and checks for each."""
+    try:
+        from cvforge.tui import CvforgeApp
+    except ImportError as exc:
+        raise _fail("The TUI needs the textual package: uv sync --extra tui") from exc
+    sources = find_sources(directory) if directory.is_dir() else []
+    if not sources:
+        raise _fail(f"No .html or .tex files found in {directory}")
+    config = load_config()
+    CvforgeApp(sources, list(list_themes()), config.theme, config.pages).run()
+
+
 class ExportFormat(StrEnum):
     jsonresume = "jsonresume"
 

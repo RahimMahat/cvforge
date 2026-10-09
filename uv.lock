@@ -383,6 +383,7 @@ tui = [
 dev = [
     { name = "pytest" },
     { name = "ruff" },
+    { name = "textual" },
 ]
 
 [package.metadata]
@@ -408,6 +409,7 @@ provides-extras = ["llm", "tui"]
 dev = [
     { name = "pytest", specifier = ">=8" },
     { name = "ruff", specifier = ">=0.6" },
+    { name = "textual", specifier = ">=8.2.8" },
 ]
 
 [[package]]

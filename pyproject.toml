@@ -30,7 +30,11 @@ tui = ["textual"]
 cvforge = "cvforge.cli:app"
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = [
+    "pytest>=8",
+ "ruff>=0.6",
+ "textual>=8.2.8",
+]
 
 [build-system]
 requires = ["hatchling"]

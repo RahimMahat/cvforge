@@ -6,12 +6,18 @@ from collections.abc import Callable
 from pathlib import Path
 
 SUFFIXES = (".html", ".tex")  # the two tools' outputs; other formats are ingested one at a time
+SKIP_DIRS = {"out", "node_modules"}  # plus anything hidden, such as .venv and .git
 
 
 def find_sources(folder: Path) -> list[Path]:
     """Every .html and .tex file under the folder, in a stable order."""
-    files = (path for path in folder.rglob("*") if path.is_file())
-    return sorted(path for path in files if path.suffix.lower() in SUFFIXES)
+
+    def wanted(path: Path) -> bool:
+        inside = path.relative_to(folder).parts[:-1]
+        skipped = any(part in SKIP_DIRS or part.startswith(".") for part in inside)
+        return path.suffix.lower() in SUFFIXES and not skipped and path.is_file()
+
+    return sorted(path for path in folder.rglob("*") if wanted(path))
 
 
 def _stamps(folders: list[Path]) -> dict[Path, float]:

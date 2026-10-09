@@ -56,6 +56,18 @@ uv run cvforge export resume.yaml --format jsonresume [-o resume.json]
 `watch` with no folders uses `watch_dirs` from `cvforge.toml`. Files already present when it
 starts are left alone; use `batch` for those.
 
+## Terminal UI
+
+```
+uv sync --extra tui
+uv run cvforge tui samples/
+```
+
+Lists the `.html` and `.tex` resumes under a folder. Press Enter on one, then change the theme
+or the page limit: each change re-runs the normal pipeline and shows the page count and every
+faithfulness, ATS, page-fit and lint result. `r` runs again, `q` quits. Outputs land in
+`out/<source-stem>/` as usual.
+
 ## Themes and page fitting
 
 ```
