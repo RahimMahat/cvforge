@@ -8,8 +8,10 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "pdfplumber>=0.11.10",
     "pydantic>=2.7",
     "pypdf>=6.19.0",
+    "rapidfuzz>=3.14.6",
     "rich>=13",
     "ruamel.yaml>=0.18",
     "typer>=0.12",

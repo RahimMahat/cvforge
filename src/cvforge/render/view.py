@@ -178,3 +178,32 @@ def build_view(resume: Resume, config: Config) -> dict[str, Any]:
         "contact": _contact(resume),
         "sections": sections,
     }
+
+
+def _text(segments: list[Segment]) -> str:
+    return "".join(segment["text"] for segment in segments)
+
+
+def flatten(view: dict[str, Any]) -> list[tuple[str, str]]:
+    """The view as (kind, text) pairs in reading order.
+
+    Kinds: name, contact, heading, text, bullet.
+    """
+    items = [("name", view["name"]), ("text", view["headline"] or "")]
+    items += [("contact", item["text"]) for item in view["contact"]]
+    for section in view["sections"]:
+        items.append(("heading", section["heading"]))
+        for block in section["blocks"]:
+            match block["kind"]:
+                case "paragraph":
+                    items.append(("text", _text(block["segments"])))
+                case "labeled":
+                    items.append(("text", f"{block['label']}: {_text(block['segments'])}"))
+                case "bullets":
+                    items += [("bullet", _text(item)) for item in block["items"]]
+                case "entry":
+                    for line in block["lines"]:
+                        items += [("text", _text(line["left"])), ("text", line["right"])]
+                    items += [("text", _text(p)) for p in block["paragraphs"]]
+                    items += [("bullet", _text(b)) for b in block["bullets"]]
+    return [(kind, text) for kind, text in items if text]

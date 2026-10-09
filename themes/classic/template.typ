@@ -20,7 +20,11 @@
 #show regex("\w+(-\w+)+"): box
 
 #show heading: it => block(above: t.section_gap * 1pt, below: 5pt, sticky: true, {
-  set text(size: t.heading_size * 1pt, weight: "bold", fill: accent, tracking: t.heading_tracking * 1em)
+  // Kerning off: tracking plus kerned pairs makes some parsers read "E D U C AT I O N".
+  set text(
+    size: t.heading_size * 1pt, weight: "bold", fill: accent,
+    tracking: t.heading_tracking * 1em, kerning: false,
+  )
   upper(it.body)
   if t.heading_rule {
     v(3pt, weak: true)
