@@ -1,0 +1,71 @@
+meta:
+  source_file: tests/fixtures/resume.md
+  source_tool: other
+basics:
+  name: Jane Doe
+  email: jane@example.com
+  phone: +91 90000 00000
+  location: Pune, India
+  links:
+    - url: https://linkedin.com/in/jane-doe-a1b2c3
+      text: linkedin.com/in/jane-doe
+    - url: https://github.com/janedoe
+summary: Data engineer building efficient pipelines on AWS in Python and PySpark. Owns the workflow 
+  end to end, from ingestion to orchestration on Kubernetes.
+skills:
+  - category: Languages
+    items:
+      - Python
+      - SQL
+      - Bash
+  - category: Cloud
+    items:
+      - AWS (Glue, S3, Lambda)
+      - GCP
+experience:
+  - company: Example Corp
+    title: Senior Data Engineer
+    location: Pune, India
+    start: 2024-04
+    end: present
+    bullets:
+      - Architected efficient ETL pipelines using AWS Glue and **PySpark**, reducing latency by 
+        **50%**.
+      - Led Terraform & AWS CDK automation, reducing manual effort by 40%.
+  - company: Example Corp
+    title: Data Engineer
+    location: Nagpur, India
+    start: 2022-08
+    end: 2024-04
+    bullets:
+      - Tuned Redshift queries behind 60+ dashboards, improving execution times by 35%.
+  - company: Sample Analytics Pvt. Ltd.
+    title: Associate Data Engineer
+    location: Nagpur, India
+    start: 2019
+    end: 2022
+    bullets:
+      - Wrote Python & SQL jobs loading 14 partner feeds into S3.
+projects:
+  - name: lakehouse-lab
+    url: https://github.com/janedoe/lakehouse-lab
+    tech:
+      - PySpark
+      - Delta Lake
+      - dbt
+    description: Local bronze, silver and gold lakehouse with 49 dbt tests.
+    bullets:
+      - Rebuilds only changed partitions.
+education:
+  - institution: Example Institute of Technology
+    degree: Bachelor of Technology, Computer Science
+    location: Kolhapur, India
+    start: 2015
+    end: 2019
+    details:
+      - CGPA 8.7 / 10
+extra_sections:
+  - title: Volunteering
+    after: education
+    items:
+      - Taught an introductory SQL workshop for 120 students.

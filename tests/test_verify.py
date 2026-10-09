@@ -120,6 +120,9 @@ def test_run_command_end_to_end(name, tmp_path, monkeypatch):
     produced = {path.name for path in out.iterdir()}
     assert produced == {
         "Jane_Doe_Resume.pdf",
+        "Jane_Doe_Resume.docx",
+        "Jane_Doe_Resume.txt",
+        "Jane_Doe_Resume.md",
         "resume.yaml",
         "resume.yaml.verified",
         "report.json",

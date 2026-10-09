@@ -112,6 +112,7 @@ class Config(BaseModel):
     drop_sections: list[str] = ["references"]  # source headings to leave out, always reported
     keywords_path: str = "keywords.txt"
     llm_model: str = "claude-opus-5-5"  # used only by --extractor anthropic
+    watch_dirs: list[str] = []  # folders `cvforge watch` monitors when none are given
     heading_synonyms: dict[str, list[str]] = HEADING_SYNONYMS
     html_classes: dict[str, str] = HTML_CLASSES
     latex_macros: dict[str, list[str]] = LATEX_MACROS

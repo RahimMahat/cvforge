@@ -1,6 +1,6 @@
 ---
 name: format-resume
-description: Format, typeset, beautify or clean up a resume or CV file (.html from career-ops, .tex from ai-job-search) into an ATS-safe PDF with cvforge, without changing its content. Use when the user asks to format, typeset, beautify, prettify or clean up a resume or CV, or to make one ATS friendly.
+description: Format, typeset, beautify or clean up a resume or CV file (.html from career-ops, .tex from ai-job-search, also .md, .json, .txt, .pdf) into an ATS-safe PDF, DOCX, TXT and Markdown with cvforge, without changing its content. Use when the user asks to format, typeset, beautify, prettify or clean up a resume or CV, or to make one ATS friendly.
 ---
 
 # Format a resume with cvforge
@@ -69,4 +69,6 @@ installed as a tool. `<stem>` below is the source file's name without its extens
   to step 3; do not use `--force` unless the user explicitly asks for it.
 - A FAIL in the ATS check after rendering is a layout problem, not a content problem.
   Report it with the named strings; do not edit the YAML to work around it.
-- An unsupported file type exits with code 2. Only `.html` and `.tex` are supported.
+- An unsupported file type exits with code 2. Supported: `.html`, `.tex`, `.md`, `.json`
+  (JSON Resume), `.txt` and `.pdf`. Text and PDF sources carry little structure, so expect
+  to do step 2 for them: their entries arrive as plain lines in an extra section.

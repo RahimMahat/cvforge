@@ -119,7 +119,10 @@ def test_html_without_known_classes_loses_nothing():
 
 def test_detect_type_by_extension_then_content(tmp_path):
     assert detect_type(Path("cv.HTML"), "") == "html"
-    assert detect_type(Path("cv.txt"), "\\documentclass{article}") == "latex"
+    assert detect_type(Path("cv.txt"), "\\documentclass{article}") == "text"
+    assert detect_type(Path("cv"), "\\documentclass{article}") == "latex"
+    assert detect_type(Path("cv"), '{"basics": {}}') == "jsonresume"
+    assert detect_type(Path("cv"), "# Jane Doe") == "markdown"
     assert detect_type(Path("cv"), "  <!DOCTYPE html><html>") == "html"
     with pytest.raises(ValueError, match="unsupported input type"):
         detect_type(Path("cv.docx"), "PK")

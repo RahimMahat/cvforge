@@ -27,11 +27,17 @@ def _split_items(text: str) -> list[str]:
 # role -> field, per section. Entries missing a required field fall back to an extra section.
 _FIELDS = {
     "experience": {"org": "company", "title": "title", "location": "location"},
-    "projects": {"title": "name", "description": "description"},
-    "education": {"org": "institution", "title": "degree", "location": "location"},
+    "projects": {"title": "name", "org": "name", "description": "description"},
+    "education": {
+        "org": "institution",
+        "title": "degree",
+        "field": "field",
+        "location": "location",
+    },
     "certifications": {"title": "name", "org": "issuer"},
     "awards": {"title": "title", "org": "awarder"},
     "publications": {"title": "name", "org": "publisher"},
+    "languages": {"title": "language", "description": "fluency"},
 }
 _REQUIRED = {
     "experience": ("company", "title"),
@@ -40,6 +46,7 @@ _REQUIRED = {
     "certifications": ("name",),
     "awards": ("title",),
     "publications": ("name",),
+    "languages": ("language",),
 }
 
 
@@ -79,7 +86,7 @@ class _Builder:
 
     def contact(self, block: Block) -> None:
         basics, text, url = self.data["basics"], block.text, block.url or ""
-        if block.role in ("email", "phone"):
+        if block.role in ("email", "phone", "headline"):
             basics[block.role] = text
         elif block.role == "address":
             basics["location"] = text
@@ -163,18 +170,27 @@ class _Builder:
             else:
                 self.unplace(text)
             return
+        if section == "experience" and role == "title" and entry.get("title"):
+            # a second title under one company line is another role at that company
+            company = entry["company"]
+            entry = self.open_entry(section)
+            entry["company"] = company
         entry["_texts"].append(text)
         fields = _FIELDS[section]
         if role in fields and fields[role] not in entry:
             entry[fields[role]] = text
-            if section == "projects" and role == "title" and block.url:
+            if section in ("projects", "publications") and block.url:
                 entry["url"] = block.url
+        elif section == "projects" and role == "title" and "tech" not in entry:
+            entry["tech"] = _split_items(text)  # the line under a project's name is its stack
         elif role == "dates" and self.dates(entry, section, text):
             pass
         elif role == "tech" and section == "projects":
             entry["tech"] = _split_items(text)
         elif block.kind == "bullet" and section in ("experience", "projects"):
             entry.setdefault("bullets", []).append(text)
+        elif section == "projects" and role is None and "description" not in entry:
+            entry["description"] = text  # an unlabelled paragraph under a project describes it
         elif section == "education" and role in (None, "details", "description"):
             entry.setdefault("details", []).append(text)
         else:
@@ -186,7 +202,7 @@ class _Builder:
     def add(self, block: Block) -> None:
         if block.role == "name":
             self.data["basics"]["name"] = block.text
-        elif block.role in ("contact", "email", "phone", "address"):
+        elif block.role in ("contact", "email", "phone", "address", "headline"):
             self.contact(block)
         elif block.kind == "heading":
             self.close_entry()

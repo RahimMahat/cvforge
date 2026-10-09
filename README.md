@@ -20,11 +20,41 @@ uv run cvforge check <pdf> --yaml resume.yaml [--jd jd.txt]   # what an ATS pars
 uv run cvforge lint resume.yaml              # style warnings only, nothing is changed
 ```
 
-Everything for one source lands in `out/<source-stem>/`. `render` refuses a YAML whose
+Everything for one source lands in `out/<source-stem>/`: the resume as PDF, DOCX, TXT and
+Markdown, plus `resume.yaml`, `report.json` and `ats_view.txt`. Choose formats with
+`--formats pdf,docx` or `formats` in `cvforge.toml`. `render` refuses a YAML whose
 verification failed (override with `--force`); hand edits after a pass only warn.
 
 `render` and `check` write `ats_view.txt` (the extracted text) and `report.json` beside the PDF
 and exit 1 if any check fails.
+
+## Inputs
+
+| Input | How much structure is recovered |
+|---|---|
+| `.html` (career-ops), `.tex` (ai-job-search) | Everything, via the class and macro maps in config. |
+| `.json` (JSON Resume) | Everything; sections with no cvforge field become extra sections. |
+| `.md` | Headings, bullets, skills lines, and entries written as below. |
+| `.txt`, `.pdf` | Name, contact line, headings, bullets and skills lines. Entries are kept as plain lines and reported; PDF is a last resort. |
+
+Markdown entries use the same shape cvforge's own `.md` output has:
+
+```
+**Example Corp** | Pune, India
+*Senior Data Engineer* | Jun 2023 – Present
+- A bullet.
+```
+
+## Many files
+
+```
+uv run cvforge batch samples/          # every .html and .tex under a folder; exit 1 if any fail
+uv run cvforge watch inbox/ other/     # process files as they appear or change (Ctrl+C stops)
+uv run cvforge export resume.yaml --format jsonresume [-o resume.json]
+```
+
+`watch` with no folders uses `watch_dirs` from `cvforge.toml`. Files already present when it
+starts are left alone; use `batch` for those.
 
 ## Themes and page fitting
 

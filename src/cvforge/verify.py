@@ -163,7 +163,7 @@ def verify(doc: SourceDoc, resume: Resume, config: Config) -> list[CheckResult]:
     added += [
         f"{where}: {url!r}"
         for where, url in units.urls
-        if url not in source_urls and url.lower() not in haystack
+        if url not in source_urls and display_url(url).lower() not in haystack
     ]
     added += [
         f"{where}: dates {' to '.join(_values(pair))} not in the source"
