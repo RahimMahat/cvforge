@@ -192,10 +192,17 @@ def verify(doc: SourceDoc, resume: Resume, config: Config) -> list[CheckResult]:
     # Order: bullets keep the order they had in the source.
     reordered = []
     for where, items in units.groups:
-        positions = [_best(normalize(item), source) for item in items]
-        indexes = [index for score, index in positions if score >= FUZZY_MIN]
-        if indexes != sorted(indexes):
-            reordered.append(f"{where}: bullets are not in source order")
+        cursor = 0  # walk forward through the source, so two identical lines match in turn
+        for item in map(normalize, items):
+            ahead = (
+                i for i in range(cursor, len(source)) if fuzz.ratio(item, source[i]) >= FUZZY_MIN
+            )
+            found = next(ahead, None)
+            if found is not None:
+                cursor = found + 1
+            elif _best(item, source)[0] >= FUZZY_MIN:  # it exists, but only further back
+                reordered.append(f"{where}: bullets are not in source order")
+                break
 
     return [
         CheckResult("Coverage", "fail" if uncovered else "pass", uncovered),

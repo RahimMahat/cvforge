@@ -44,11 +44,42 @@ def test_dates_and_urls():
     assert display_url("https://linkedin.com/in/janedoe/") == "linkedin.com/in/janedoe"
 
 
-def test_consecutive_roles_share_one_company_line():
+def experience_lines(config: Config) -> list[list[tuple[str, str, str]]]:
+    view = build_view(load_resume(EXAMPLE), config)
+    section = next(s for s in view["sections"] if s["heading"] == "Experience")
+    return [
+        [(line["style"], line["left"][0]["text"], line["right"]) for line in block["lines"]]
+        for block in section["blocks"]
+    ]
+
+
+def test_every_role_gets_its_own_company_line_by_default():
+    # A parser that starts a new job at each company line must find all three roles.
+    assert experience_lines(Config()) == [
+        [
+            ("primary", "Example Corp", "Pune, India"),
+            ("secondary", "Senior Data Engineer", "Jun 2023 – Present"),
+        ],
+        [
+            ("primary", "Example Corp", "Pune, India"),
+            ("secondary", "Data Engineer", "Jul 2021 – May 2023"),
+        ],
+        [
+            ("primary", "Sample Analytics Pvt. Ltd.", "Nagpur, India"),
+            ("secondary", "Associate Data Engineer", "Aug 2019 – Jun 2021"),
+        ],
+    ]
+
+
+def test_group_roles_stacks_roles_under_one_company_line():
+    styles = [
+        [style for style, _, _ in block] for block in experience_lines(Config(group_roles=True))
+    ]
+    assert styles == [["primary", "secondary"], ["secondary"], ["primary", "secondary"]]
+
+
+def test_default_section_order():
     view = build_view(load_resume(EXAMPLE), Config())
-    experience = next(s for s in view["sections"] if s["heading"] == "Experience")
-    lines = [[line["style"] for line in block["lines"]] for block in experience["blocks"]]
-    assert lines == [["primary", "secondary"], ["secondary"], ["primary", "secondary"]]
     assert [s["heading"] for s in view["sections"]][:5] == [
         "Summary",
         "Skills",

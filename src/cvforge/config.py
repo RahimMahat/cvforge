@@ -109,6 +109,9 @@ class Config(BaseModel):
     section_order: list[str] = DEFAULT_SECTION_ORDER
     company_suffix: bool = False
     keep_heading_text: bool = False  # render the source's heading wording
+    # True shows a company once with its roles stacked beneath. Off by default: a parser
+    # that splits jobs on the company line reads stacked roles as one job.
+    group_roles: bool = False
     max_file_mb: float = 2.0
     drop_sections: list[str] = ["references"]  # source headings to leave out, always reported
     keywords_path: str = "keywords.txt"

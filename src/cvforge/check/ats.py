@@ -134,6 +134,19 @@ def heading_problems(headings: list[str] | None, text: str) -> list[str]:
     ]
 
 
+def stacked_role_problems(resume: Resume, config: Config) -> list[str]:
+    """With group_roles on, later roles at a company have no company line of their own."""
+    if not config.group_roles:
+        return []
+    jobs = resume.experience
+    return [
+        f"{job.title!r} is stacked under {job.company!r} without its own company line; "
+        "some parsers will read these roles as one job"
+        for previous, job in zip(jobs, jobs[1:], strict=False)
+        if job.company == previous.company
+    ]
+
+
 def _embedded(font: Any) -> bool:
     font = font.get_object()
     if "/DescendantFonts" in font:
@@ -203,6 +216,8 @@ def run_checks(
     )
     if view:
         results += _content_results(flatten(view), texts)
+        if stacked := stacked_role_problems(resume, config):
+            results.append(_result("Stacked roles", stacked, "warn"))
     results.append(_result("Glyphs", _each(texts, glyph_problems)))
     primary = next(iter(texts.values()))
     results.append(_result("Headings", heading_problems(headings, primary), "warn"))

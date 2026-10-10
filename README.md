@@ -68,6 +68,10 @@ Everything lands in `out/<source-stem>/` (for a hand-written file, `out/<yaml-na
 
 Exit codes: `0` ok, `1` a check failed, `2` usage or input error.
 
+Which file to upload: the PDF is the designed, checked version. Some resume parsers handle
+Word files more reliably than PDF, so where a portal accepts or asks for Word, use the DOCX.
+The TXT is for pasting into form fields.
+
 ## Commands
 
 | Command | What it does |
@@ -129,8 +133,10 @@ worth knowing when editing by hand:
 - **Dates** are `YYYY-MM` or `YYYY`; an ongoing role ends in `present`. They are displayed as
   `Jun 2023 – Present` (see `date_format`).
 - **`**bold**`** is the only inline markup.
-- **Several roles at one company** are separate `experience` entries; consecutive entries with
-  the same company share one company line.
+- **Several roles at one company** are separate `experience` entries, and each one is
+  rendered with its own company line. A parser that starts a new job at every company line
+  then finds every role with its own title and dates. `group_roles = true` shows the company
+  once with the roles stacked beneath; it reads nicely but the ATS check warns about it.
 - **Links** show `text` when it is set and the URL without `https://` otherwise; either way the
   link target is the full `url`.
 - **`extra_sections`** hold anything that fits no standard section. `after: skills` places one
@@ -163,6 +169,7 @@ and, when installed, `pdftotext -layout`:
 | Name | In the first two lines. |
 | Contact | Email, phone and link text extract intact, and every link is clickable through to its full URL. |
 | Content and order | Every heading, line and bullet is present, in reading order. |
+| Stacked roles | A warning, only with `group_roles = true`: roles without their own company line. |
 | Column-guessing parsers | A warning when `pdftotext -layout` reads right-aligned dates out of order. |
 | Glyphs | No ligature glyphs, replacement characters, private-use characters, or words broken at a hyphen. |
 | Headings | A warning for any non-standard heading (extra sections, or `keep_heading_text`). |
@@ -206,6 +213,7 @@ folder you run in; with no file, the defaults apply.
 | `date_format` | `"%b %Y"` | How `YYYY-MM` dates are shown. |
 | `section_order` | Summary, Skills, Experience, Projects, Education, ... | Order of sections. Any you leave out still render, after the ones you list. |
 | `keep_heading_text` | `false` | Render the source's heading wording. |
+| `group_roles` | `false` | One company line with its roles stacked beneath (riskier for ATS). |
 | `company_suffix` | `false` | `Jane_Doe_Resume_Acme.pdf` from `meta.target_company`. |
 | `max_file_mb` | `2.0` | PDF size limit in the ATS check. |
 | `drop_sections` | `["references"]` | Source headings to leave out (always reported). |

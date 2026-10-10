@@ -159,3 +159,14 @@ def test_unsupported_input_is_a_usage_error(tmp_path, monkeypatch):
     (tmp_path / "cv.docx").write_bytes(b"PK")
     assert runner.invoke(app, ["ingest", "cv.docx"]).exit_code == 2
     assert runner.invoke(app, ["ingest", "missing.html"]).exit_code == 2
+
+
+def test_identical_lines_in_one_list_are_not_a_reordering(case):
+    doc, resume = case
+    resume.extra_sections.append(
+        type(resume.extra_sections[0])(title="Core Competencies", items=["CI/CD Automation"])
+    )
+    twin = [b for b in doc.blocks if b.kind == "bullet"][0]
+    doc.blocks += [twin, type(twin)("bullet", "Something else entirely."), twin]
+    resume.extra_sections[-1].items = [twin.text, "Something else entirely.", twin.text]
+    assert "Order" not in failures(doc, resume)

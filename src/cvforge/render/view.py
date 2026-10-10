@@ -84,8 +84,24 @@ def _dated(name: str, by: str | None, when: str | None, fmt: str) -> Block:
     return _entry([_line(left, format_date(when, fmt) if when else "")], continued=True)
 
 
-def _experience(jobs: list[Experience], fmt: str) -> list[Block]:
-    """Consecutive roles at one company share a single company line."""
+def _experience(jobs: list[Experience], fmt: str, group_roles: bool) -> list[Block]:
+    """One entry per role: a company line, then the title and dates.
+
+    With group_roles, consecutive roles at one company share a single company line instead.
+    That reads well, but a parser that starts a new job at each company line then sees one
+    job, so every role repeats its company unless the user asks otherwise.
+    """
+    if not group_roles:
+        return [
+            _entry(
+                [
+                    _line(to_segments(job.company), job.location or "", "primary"),
+                    _line(to_segments(job.title), date_range(job.start, job.end, fmt), "secondary"),
+                ],
+                bullets=job.bullets,
+            )
+            for job in jobs
+        ]
     blocks: list[Block] = []
     for company, group in groupby(jobs, key=lambda job: job.company):
         roles = list(group)
@@ -121,7 +137,8 @@ def _education(edu: Education, fmt: str) -> Block:
     return _entry(lines, edu.details)
 
 
-def _blocks(resume: Resume, key: str, fmt: str) -> list[Block]:
+def _blocks(resume: Resume, key: str, config: Config) -> list[Block]:
+    fmt = config.date_format
     match key:
         case "summary":
             text = resume.summary
@@ -136,7 +153,7 @@ def _blocks(resume: Resume, key: str, fmt: str) -> list[Block]:
                 for g in resume.skills
             ]
         case "experience":
-            return _experience(resume.experience, fmt)
+            return _experience(resume.experience, fmt, config.group_roles)
         case "projects":
             return [_project(p) for p in resume.projects]
         case "education":
@@ -177,7 +194,7 @@ def build_view(resume: Resume, config: Config) -> dict[str, Any]:
         if key == "extra_sections":  # those not pinned after a standard section
             placed = [e for e in extras if e.after not in order]
         else:
-            if blocks := _blocks(resume, key, config.date_format):
+            if blocks := _blocks(resume, key, config):
                 kept = resume.meta.headings.get(key) if config.keep_heading_text else None
                 sections.append({"heading": kept or HEADINGS[key], "blocks": blocks})
             placed = [e for e in extras if e.after == key]

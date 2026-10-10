@@ -13,6 +13,7 @@ from cvforge.check.ats import (
     link_target_problems,
     name_problems,
     run_checks,
+    stacked_role_problems,
 )
 from cvforge.cli import app
 from cvforge.config import Config, resource
@@ -162,3 +163,16 @@ def test_check_command_exit_codes(pdf, tmp_path):
 def test_flatten_reads_in_page_order(resume):
     kinds = [kind for kind, _ in flatten(build_view(resume, Config()))]
     assert kinds[0] == "name" and kinds.count("heading") == 8
+
+
+def test_stacked_roles_are_flagged_only_when_grouping_is_on(resume, tmp_path):
+    assert stacked_role_problems(resume, Config()) == []
+    grouped = Config(group_roles=True)
+    problems = stacked_role_problems(resume, grouped)
+    assert len(problems) == 1 and "'Data Engineer' is stacked under 'Example Corp'" in problems[0]
+    out = tmp_path / "grouped.pdf"
+    render_pdf(build_view(resume, grouped), "classic", "a4", out)
+    results, _ = run_checks(out, grouped, resume)
+    by_name = {r.name: r for r in results}
+    assert by_name["Stacked roles"].status == "warn"
+    assert by_name["Content and order"].status == "pass"
